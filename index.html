@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dr. Letter - 진단 리포트</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 기본 스타일 유지 */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: #F8FAFC; color: #1E293B; line-height: 1.6; }
+        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background-color: #FFFFFF; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+
+        /* 잠금 화면 */
+        #lock-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #FFFFFF; z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; }
+        .lock-icon { font-size: 48px; color: #1E4B3E; margin-bottom: 20px; }
+        .lock-title { font-size: 24px; font-weight: 800; color: #1E4B3E; margin-bottom: 10px; }
+        .lock-desc { font-size: 15px; color: #64748B; margin-bottom: 40px; }
+        .dob-input { width: 100%; max-width: 320px; padding: 16px; font-size: 18px; text-align: center; border: 2px solid #E2E8F0; border-radius: 12px; margin-bottom: 20px; outline: none; }
+        .dob-input:focus { border-color: #10B981; }
+        .unlock-btn { width: 100%; max-width: 320px; padding: 16px; background-color: #1E4B3E; color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; }
+        .error-msg { color: #EF4444; font-size: 14px; margin-top: -10px; margin-bottom: 20px; display: none; }
+
+        /* 리포트 화면 */
+        #report-screen { display: none; padding-bottom: 40px; }
+        .clinic-header { background-color: #1E4B3E; color: white; padding: 30px 20px 50px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
+        .clinic-name { font-size: 16px; opacity: 0.9; }
+        .patient-greeting { font-size: 22px; font-weight: 800; margin-top: 5px; }
+        
+        .report-card { background: white; margin: -30px 20px 0; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); position: relative; z-index: 10; display: flex; flex-direction: column; gap: 24px; }
+
+        /* 각 섹션별 스타일 */
+        .section-title { font-size: 14px; color: #10B981; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        
+        /* 1. 표준 치료 계획 (템플릿 내용) */
+        .template-text { font-size: 16px; color: #334155; line-height: 1.6; background: #F1F5F9; padding: 16px; border-radius: 12px; }
+
+        /* 2. 원장님 맞춤 코멘트 (건바이건) */
+        .custom-comment { background-color: #F8FAFC; border-left: 4px solid #1E4B3E; padding: 16px; border-radius: 0 12px 12px 0; }
+        .custom-comment p { font-size: 15px; color: #475569; }
+
+        /* 3. 진단 사진 */
+        .image-box { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #E2E8F0; }
+        .image-box img { width: 100%; display: block; }
+
+        /* 하단 버튼 */
+        .action-buttons { display: flex; gap: 10px; margin: 20px 20px 0; }
+        .btn { flex: 1; padding: 14px; text-align: center; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; }
+        .btn-call { background-color: #F1F5F9; color: #1E293B; }
+        .btn-book { background-color: #10B981; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- 1. 보안 잠금 화면 -->
+    <div id="lock-screen">
+        <i class="fa-solid fa-shield-halved lock-icon"></i>
+        <h1 class="lock-title">안전한 진단 리포트</h1>
+        <p class="lock-desc">생년월일 6자리를 입력해 주세요.</p>
+        <input type="tel" id="dob-input" class="dob-input" placeholder="예: 850123" maxlength="6">
+        <p id="error-msg" class="error-msg">생년월일이 일치하지 않습니다.</p>
+        <button class="unlock-btn" onclick="unlockReport()">리포트 확인하기</button>
+    </div>
+
+    <!-- 2. 진단 리포트 화면 -->
+    <div id="report-screen">
+        <div class="clinic-header">
+            <div class="clinic-name" id="display-clinic-name">로딩중...</div>
+            <div class="patient-greeting" id="display-patient-name">데이터를 불러오는 중입니다.</div>
+        </div>
+
+        <div class="report-card">
+            
+            <!-- 블록 A: 진단 사진 -->
+            <div id="block-image" style="display: none;">
+                <div class="section-title"><i class="fa-regular fa-image"></i> 참고 사진</div>
+                <div class="image-box">
+                    <img id="display-image" src="" alt="진단 사진">
+                </div>
+            </div>
+
+            <!-- 블록 B: 표준 치료 계획 (템플릿) -->
+            <div id="block-template" style="display: none;">
+                <div class="section-title"><i class="fa-solid fa-file-medical"></i> 맞춤 치료 계획</div>
+                <div class="template-text" id="display-template-text">
+                </div>
+            </div>
+
+            <!-- 블록 C: 원장님 맞춤 코멘트 (진단소견) -->
+            <div id="block-custom" style="display: none;">
+                <div class="section-title"><i class="fa-solid fa-user-doctor"></i> 담당의 소견</div>
+                <div class="custom-comment">
+                    <p id="display-custom-text"></p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="action-buttons">
+            <a href="#" class="btn btn-call"><i class="fa-solid fa-phone"></i> 병원 전화하기</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // URL에서 에어테이블 데이터를 읽어오는 마법의 로봇
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 에어테이블에서 날아온 데이터들 (url 파라미터)
+    const patientData = {
+        clinicName: urlParams.get('clinic') || "모리치과", // 기본값
+        patientName: urlParams.get('name') || "환자",
+        dob: urlParams.get('dob') || "850123", // 테스트용 기본 비밀번호
+        imageUrl: urlParams.get('img') || "",
+        templateContent: urlParams.get('plan') || "",
+        customComment: urlParams.get('comment') || ""
+    };
+
+    function unlockReport() {
+        const input = document.getElementById('dob-input').value;
+        
+        // 입력한 비밀번호(생년월일)가 환자 데이터와 일치하면 통과!
+        if(input === patientData.dob || input === "000000") { // 000000은 마스터키 (테스트용)
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('report-screen').style.display = 'block';
+            
+            // 화면에 데이터 뿌리기
+            document.getElementById('display-clinic-name').innerText = patientData.clinicName;
+            document.getElementById('display-patient-name').innerText = patientData.patientName + " 님의 진단 결과";
+
+            if (patientData.imageUrl !== "") {
+                document.getElementById('display-image').src = patientData.imageUrl;
+                document.getElementById('block-image').style.display = 'block';
+            }
+
+            if (patientData.templateContent !== "") {
+                document.getElementById('display-template-text').innerText = patientData.templateContent;
+                document.getElementById('block-template').style.display = 'block';
+            }
+
+            if (patientData.customComment !== "") {
+                document.getElementById('display-custom-text').innerText = patientData.customComment;
+                document.getElementById('block-custom').style.display = 'block';
+            }
+
+            window.scrollTo(0, 0);
+        } else {
+            document.getElementById('error-msg').style.display = 'block';
+            
+            // 틀렸을 때 입력창 흔들림 효과
+            const dobInput = document.getElementById('dob-input');
+            dobInput.style.transform = 'translateX(-10px)';
+            setTimeout(() => dobInput.style.transform = 'translateX(10px)', 100);
+            setTimeout(() => dobInput.style.transform = 'translateX(-10px)', 200);
+            setTimeout(() => dobInput.style.transform = 'translateX(0)', 300);
+        }
+    }
+
+    // 엔터키 지원
+    document.getElementById('dob-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') checkDOB();
+    });
+</script>
+
+</body>
+</html>
