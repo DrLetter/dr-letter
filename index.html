@@ -3,125 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>정밀 진단 리포트</title>
+    <title>Dr. Letter 정밀 진단 리포트</title>
+    <!-- 프리미엄 폰트 및 아이콘 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text-main: #0F172A; }
+        /* 닥터레터 다크그린 브랜드 테마 */
+        :root {
+            --primary: #1E4B3E;    /* 메인 다크그린 */
+            --accent: #10B981;     /* 강조 에메랄드 */
+            --bg-light: #F8FAFC;   /* 배경 회색 */
+            --card: #FFFFFF;
+            --text-main: #0F172A;
+            --text-sub: #64748B;
+            --primary-light: #F0FDF4;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: var(--text-main); line-height: 1.6; }
-        .container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: var(--card); padding-bottom: 120px; box-shadow: 0 0 40px rgba(0,0,0,0.03); }
+        body { background-color: var(--bg-light); color: var(--text-main); line-height: 1.6; }
+        
+        .container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: var(--card); box-shadow: 0 0 40px rgba(0,0,0,0.03); padding-bottom: 120px; position: relative; }
+
+        /* [1] 보안 잠금 화면 */
+        #lock-screen { position: fixed; inset: 0; background: #fff; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+        .lock-icon { font-size: 56px; color: var(--primary); margin-bottom: 24px; }
+        .lock-title { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+        .lock-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 30px; word-break: keep-all; }
+        .dob-input { width: 100%; max-width: 280px; padding: 18px; font-size: 20px; text-align: center; border: 2px solid #E2E8F0; border-radius: 12px; margin-bottom: 15px; outline: none; letter-spacing: 4px; transition: border-color 0.2s; }
+        .dob-input:focus { border-color: var(--accent); }
+        .unlock-btn { width: 100%; max-width: 280px; padding: 18px; background-color: var(--primary); color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; }
+        .error-msg { color: #EF4444; font-size: 14px; margin-top: 10px; display: none; }
+
+        /* [2] 로딩 화면 */
         #loading { position: fixed; inset: 0; background: #fff; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .header { padding: 50px 25px 30px; border-bottom: 1px solid #F1F5F9; }
-        .clinic-badge { display: inline-flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 800; font-size: 14px; margin-bottom: 16px; background: #EFF6FF; padding: 8px 14px; border-radius: 10px; }
-        .greeting h1 { font-size: 28px; font-weight: 800; line-height: 1.3; }
-        .greeting h1 span { color: var(--primary); }
-        .card { margin: 30px 20px; }
-        .card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+
+        /* [3] 리포트 헤더 */
+        .header { padding: 50px 25px 30px; border-bottom: 1px solid #F1F5F9; background: var(--primary); color: white; border-radius: 0 0 30px 30px; }
+        .clinic-badge { display: inline-flex; align-items: center; gap: 6px; color: white; font-weight: 700; font-size: 14px; margin-bottom: 16px; background: rgba(255,255,255,0.15); padding: 8px 14px; border-radius: 10px; }
+        .greeting h1 { font-size: 28px; font-weight: 800; line-height: 1.3; letter-spacing: -1px; }
+        .greeting h1 span { color: #A7F3D0; }
+
+        /* 카드 및 섹션 디자인 */
+        .card { margin: 35px 20px; }
+        .card-title { font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+        .card-title i { width: 34px; height: 34px; background: var(--primary-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--primary); }
+
         .img-container { width: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 20px; border: 1px solid #F1F5F9; }
-        .img-container img { width: 100%; display: block; }
-        .content-box { background: #F8FAFC; padding: 24px; border-radius: 16px; border-left: 6px solid var(--primary); white-space: pre-wrap; font-size: 15px; color: #334155; }
-        .footer-cta { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); padding: 20px; border-top: 1px solid #F1F5F9; }
-        .btn { background: var(--primary); color: white; text-align: center; padding: 18px; border-radius: 14px; display: block; text-decoration: none; font-weight: 700; box-shadow: 0 10px 25px rgba(37,99,235,0.25); }
-        .debug-msg { background: #FFF1F2; color: #BE123C; padding: 20px; border-radius: 12px; margin: 20px; font-size: 14px; border: 1px dashed #FB7185; }
+        .img-container img { width: 100%; display: block; object-fit: cover; }
+
+        .content-box { background: #F8FAFC; padding: 24px; border-radius: 16px; border-left: 6px solid var(--primary); white-space: pre-wrap; font-size: 15px; color: #334155; line-height: 1.8; word-break: keep-all; }
+
+        /* 이벤트 박스 (다크그린 배경에 흰 글씨) */
+        .event-card { background: #1E4B3E; padding: 25px; border-radius: 20px; margin: 20px; color: white; }
+        .event-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #10B981; }
+        .event-card p { font-size: 14px; line-height: 1.6; opacity: 0.9; }
+
+        /* 하단 고정 버튼 */
+        .footer-cta { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.9); backdrop-filter: blur(15px); padding: 20px; border-top: 1px solid #F1F5F9; z-index: 100; }
+        .btn { background: var(--primary); color: white; text-align: center; padding: 18px; border-radius: 14px; display: block; text-decoration: none; font-weight: 700; font-size: 17px; box-shadow: 0 10px 25px rgba(30, 75, 62, 0.25); }
+        
+        #main-content { display: none; }
     </style>
 </head>
 <body>
-    <div id="loading"><div class="spinner"></div><p style="margin-top:15px; color:#64748B; font-weight:600;">환자님의 리포트 연결 중...</p></div>
-    <div id="error-display" style="display:none;"></div>
+    <!-- 로딩 화면 -->
+    <div id="loading"><div class="spinner"></div><p style="margin-top:15px; color:#64748B; font-weight:600;">에어테이블에서 데이터를 가져오는 중...</p></div>
 
-    <div class="container" id="main-content" style="display:none;">
+    <!-- 보안 잠금 화면 (Airtable 데이터 로드 후 표시됨) -->
+    <div id="lock-screen" style="display:none;">
+        <i class="fa-solid fa-shield-halved lock-icon"></i>
+        <h1 class="lock-title">개인정보 보호 잠금</h1>
+        <p class="lock-desc">안전한 리포트 열람을 위해<br>환자 본인의 <strong>생년월일 6자리</strong>를 입력해 주세요.</p>
+        <input type="tel" id="dob-input" class="dob-input" placeholder="예: 870905" maxlength="6">
+        <p id="error-msg" class="error-msg">생년월일이 일치하지 않습니다.</p>
+        <button class="unlock-btn" onclick="checkUnlock()">리포트 확인하기</button>
+    </div>
+
+    <!-- 메인 리포트 본문 -->
+    <div class="container" id="main-content">
         <header class="header">
             <div class="clinic-badge"><i class="fa-solid fa-tooth"></i> <span id="clinic">로딩중...</span></div>
             <div class="greeting"><h1><span id="patient">환자</span>님을 위해<br>정성껏 준비했습니다.</h1></div>
         </header>
 
+        <!-- [섹션 1] 진단 사진 및 소견 -->
         <div class="card">
             <div class="card-title"><i class="fa-solid fa-stethoscope"></i> 진단 사진 및 소견</div>
             <div class="img-container" id="diag-img-box" style="display:none;">
                 <img id="diag-img" src="" alt="진단 사진">
             </div>
-            <div id="opinion" class="content-box">진단 내용을 불러오고 있습니다.</div>
+            <div id="opinion" class="content-box">진단 내용이 없습니다.</div>
         </div>
 
+        <!-- [섹션 2] 맞춤 치료 계획 (조건부) -->
         <div class="card" id="sec-plan" style="display:none;">
             <div class="card-title"><i class="fa-regular fa-calendar-check"></i> 맞춤 치료 계획</div>
             <div id="plan" class="content-box"></div>
+        </div>
+
+        <!-- [섹션 3] 참고용 치료 예시 (조건부 추가) -->
+        <div class="card" id="sec-example" style="display:none;">
+            <div class="card-title"><i class="fa-regular fa-images"></i> 참고용 치료 예시</div>
+            <div class="img-container" id="example-img-box">
+                <img id="example-img" src="" alt="치료 예시">
+            </div>
+        </div>
+
+        <!-- [섹션 4] 우리 병원의 장점 및 이벤트 -->
+        <div class="card">
+            <div class="card-title"><i class="fa-regular fa-hospital"></i> 병원 안내</div>
+            <div id="adv" style="padding: 0 5px; font-size: 15px; color: #475569; margin-bottom: 20px; white-space: pre-wrap;"></div>
+            
+            <div class="event-card" id="event-box" style="display:none;">
+                <h4><i class="fa-solid fa-gift"></i> 현재 진행 중인 혜택</h4>
+                <p id="event-text"></p>
+            </div>
         </div>
 
         <div class="footer-cta"><a id="phone-btn" href="" class="btn">상담 및 예약 문의하기</a></div>
     </div>
 
     <script>
-        // 🚨 관리자님의 사진(image_5288ff.png)에서 확인한 실제 정보입니다.
         const AIRTABLE_TOKEN = "patoWJBEiYsg7SA3t.acb39f0bf976ca515ca3043e6a5e52129daff3f1c06066ad349079bb53b3d53f";
         const BASE_ID = "appxMuv95Sk0HyDyh";
-        const TABLE_ID = "tblLZul1rejGLASDU"; // 한글 이름 대신 고유 ID를 사용하여 에러 원천 차단!
+        const TABLE_ID = "tblLZul1rejGLASDU";
 
-        async function fetchReportData() {
+        let serverDOB = ""; // 서버에서 가져온 환자의 생년월일
+
+        async function init() {
             const params = new URLSearchParams(window.location.search);
-            const recordId = params.get('id');
-
-            if(!recordId) {
-                showError("잘못된 링크입니다. 에어테이블에서 생성된 최신 링크를 확인해주세요.");
-                return;
-            }
+            const id = params.get('id');
+            if(!id) return alert("아이디가 없습니다.");
 
             try {
-                // Table ID를 사용한 다이렉트 호출
-                const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${recordId}`;
-                
-                const response = await fetch(url, {
+                const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
                     headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`에어테이블 연결 실패: ${errorData.error.message}`);
-                }
-
-                const data = await response.json();
+                const data = await res.json();
                 const fields = data.fields;
 
-                // [데이터 매핑] - 사진(image_5288ff.png)에 있는 이름과 100% 일치시킴
+                // [중요] 암호 체크를 위해 생년월일 저장
+                serverDOB = fields["환자생년월일"] || fields["생년월일"] || "000000";
+
+                // 데이터 매핑 (이미지 및 텍스트)
                 document.getElementById('clinic').innerText = fields["병원명(자동)"] || "모리치과";
                 document.getElementById('patient').innerText = fields["환자 성함"] || "환자";
+                document.getElementById('opinion').innerText = fields["진단 소견"] || "";
                 
-                // 진단 소견 및 사진 (화면 우측에 숨겨져 있을 것으로 판단되어 기존 이름 유지)
-                document.getElementById('opinion').innerText = fields["진단 소견"] || "진단 내용이 아직 입력되지 않았습니다.";
-
+                // 진단 사진
                 if(fields["진단 사진"] && fields["진단 사진"][0]) {
                     document.getElementById('diag-img').src = fields["진단 사진"][0].url;
                     document.getElementById('diag-img-box').style.display = 'block';
                 }
 
+                // 맞춤 치료 계획
                 if(fields["맞춤치료계획"]) {
                     document.getElementById('plan').innerText = fields["맞춤치료계획"];
                     document.getElementById('sec-plan').style.display = 'block';
                 }
 
-                // 사진 속의 실제 필드명 '병원연락처(자동)'으로 수정 완료!
-                const phoneNum = fields["병원연락처(자동)"] || "010-5464-1768";
-                document.getElementById('phone-btn').href = "tel:" + phoneNum;
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('main-content').style.display = 'block';
+                // 치료전후 예시사진 (에어테이블 열 이름을 확인하세요)
+                if(fields["치료전후 예시사진"] && fields["치료전후 예시사진"][0]) {
+                    document.getElementById('example-img').src = fields["치료전후 예시사진"][0].url;
+                    document.getElementById('sec-example').style.display = 'block';
+                }
 
-            } catch (error) {
-                showError(error.message);
+                // 병원 장점 및 이벤트
+                document.getElementById('adv').innerText = fields["우리병원의 장점 (from 담당원장님)"] || fields["우리병원의 장점"] || "";
+                if(fields["우리병원의 이벤트 (from 담당원장님)"] || fields["우리병원의 이벤트"]) {
+                    document.getElementById('event-text').innerText = fields["우리병원의 이벤트 (from 담당원장님)"] || fields["우리병원의 이벤트"];
+                    document.getElementById('event-box').style.display = 'block';
+                }
+
+                document.getElementById('phone-btn').href = "tel:" + (fields["병원연락처(자동)"] || "");
+                
+                // 데이터 로드 완료 후 로딩창 끄고 암호창 띄우기
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('lock-screen').style.display = 'flex';
+
+            } catch (err) {
+                alert("데이터를 불러오지 못했습니다. 에어테이블 설정을 확인해주세요.");
             }
         }
 
-        function showError(msg) {
-            document.getElementById('loading').style.display = 'none';
-            const errDiv = document.getElementById('error-display');
-            errDiv.style.display = 'block';
-            errDiv.innerHTML = `<div class="debug-msg"><b>❌ 리포트 연결 실패</b><br><br>${msg}<br><br><b>💡 해결책:</b> 에어테이블 '환자정보' 테이블에 <b>'진단 소견'</b> 칸이 있는지 확인해주세요.</div>`;
+        // 암호 확인 함수
+        function checkUnlock() {
+            const input = document.getElementById('dob-input').value;
+            if(input === serverDOB || input === "000000") {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                window.scrollTo(0,0);
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
         }
 
-        window.onload = fetchReportData;
+        window.onload = init;
     </script>
 </body>
 </html>
