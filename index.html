@@ -110,7 +110,7 @@
             <div id="plan-text" class="comment-box"></div>
         </div>
 
-        <!-- 섹션 3: 참고용 치료 예시 (데이터 있을 때만) -->
+        <!-- 섹션 3: 참고용 치료 전후 예시 사진 (데이터 있을 때만) -->
         <div class="card" id="card-example" style="display:none;">
             <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 참고용 치료 예시</div>
             <div class="image-frame">
@@ -187,7 +187,7 @@
                     document.getElementById('card-plan').style.display = 'block';
                 }
 
-                // 4. 치료전후 예시사진 (필드명 후보군 대폭 확대)
+                // 4. 참고용 치료 전후 예시 사진 (필드명 후보군 대폭 확대)
                 const exPhoto = fields["치료전후 예시사진"] || fields["치료예시"] || fields["예시사진"] || fields["참고사진"];
                 if(exPhoto && exPhoto[0]) {
                     document.getElementById('example-img').src = exPhoto[0].url;
@@ -234,3 +234,4 @@
     </script>
 </body>
 </html>
+
