@@ -43,8 +43,8 @@
 
         /* [3] 프리미엄 헤더 */
         .header { padding: 45px 25px 40px; background: var(--primary); color: white; border-radius: 0 0 45px 45px; text-align: center; box-shadow: 0 10px 30px rgba(30, 75, 62, 0.2); }
-        .logo-area { margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 50px; }
-        .clinic-logo { height: 50px; max-width: 200px; object-fit: contain; filter: brightness(0) invert(1); } /* 강제 화이트 반전 */
+        .logo-area { display: inline-flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .clinic-logo { height: 40px; max-width: 180px; object-fit: contain; } /* 강제 반전 삭제, 흰색 배경 박스 */
         .clinic-sub-name { font-size: 14px; font-weight: 600; opacity: 0.7; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
         .greeting h1 { font-size: 27px; font-weight: 800; line-height: 1.4; letter-spacing: -1.2px; }
         .greeting h1 span { color: #D1FAE5; }
@@ -110,7 +110,7 @@
             <div id="plan-text" class="comment-box"></div>
         </div>
 
-        <!-- 섹션 3: 참고용 치료 전후 예시 사진 (데이터 있을 때만) -->
+        <!-- 섹션 3: 참고용 치료 예시 (데이터 있을 때만) -->
         <div class="card" id="card-example" style="display:none;">
             <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 참고용 치료 예시</div>
             <div class="image-frame">
@@ -187,9 +187,18 @@
                     document.getElementById('card-plan').style.display = 'block';
                 }
 
-                // 4. 참고용 치료 전후 예시 사진 (필드명 후보군 대폭 확대)
-                const exPhoto = fields["치료전후 예시사진"] || fields["치료예시"] || fields["예시사진"] || fields["참고사진"];
-                if(exPhoto && exPhoto[0]) {
+                // 4. 치료전후 예시사진 (에어테이블 룩업 필드명 후보 총망라)
+                const exPhoto = fields["참고용 치료 전후 예시 사진"] 
+                             || fields["참고용 치료 전후 예시 사진 (from 치료템플릿)"] 
+                             || fields["참고용 치료 전후 예시 사진 (from 치료템플릿 선택)"]
+                             || fields["참고용 치료 예시"]
+                             || fields["참고용 치료 예시 (from 치료템플릿)"]
+                             || fields["치료전후 예시사진"] 
+                             || fields["치료전후 예시사진 (from 치료템플릿)"]
+                             || fields["예시사진"] 
+                             || fields["참고사진"];
+                             
+                if(exPhoto && exPhoto.length > 0 && exPhoto[0].url) {
                     document.getElementById('example-img').src = exPhoto[0].url;
                     document.getElementById('card-example').style.display = 'block';
                 }
@@ -234,4 +243,3 @@
     </script>
 </body>
 </html>
-
