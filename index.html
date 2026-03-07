@@ -43,9 +43,10 @@
 
         /* [3] 프리미엄 헤더 (로고 배경 투명화 & 타이틀 계층 역전) */
         .header { padding: 50px 25px 40px; background: var(--primary); color: white; border-radius: 0 0 40px 40px; text-align: center; box-shadow: 0 10px 30px rgba(30, 75, 62, 0.2); }
-        .clinic-brand-badge { display: inline-flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px; }
-        .clinic-logo { height: 44px; max-width: 140px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); background-color: #FFFFFF; padding: 4px; } /* 로고 아이콘화 */
-        .clinic-sub-name { font-size: 30px; font-weight: 800; color: #FFFFFF; letter-spacing: -1px; }
+        .clinic-brand-badge { display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .clinic-logo { height: 40px; max-width: 140px; object-fit: contain; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); background-color: #FFFFFF; padding: 4px; } /* 로고 아이콘화 */
+        .clinic-sub-name { font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; word-break: keep-all; }
+        .clinic-sub-name .light-text { font-weight: 400; opacity: 0.9; }
         .greeting h1 { font-size: 17px; font-weight: 500; line-height: 1.5; color: rgba(255,255,255,0.85); letter-spacing: -0.5px; }
         .greeting h1 span { color: #A7F3D0; font-weight: 700; font-size: 19px; }
 
@@ -159,8 +160,8 @@
                 const c_name = fields["병원명(자동)"] || "우리치과";
                 const p_name = fields["환자 성함"] || "환자";
 
-                // 헤더 텍스트 적용
-                document.getElementById('clinic-sub-badge').innerText = c_name;
+                // 헤더 텍스트 적용 (병원명 뒤에 '정밀 진단 리포트' 추가)
+                document.getElementById('clinic-sub-badge').innerHTML = `${c_name} <span class="light-text">정밀 진단 리포트</span>`;
                 document.getElementById('patient-name-top').innerText = p_name;
 
                 // 요청 문구 수정 적용
