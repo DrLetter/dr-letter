@@ -12,26 +12,25 @@
         /* 럭셔리 베이지 & 다크그린 브랜드 테마 */
         :root {
             --primary: #1E4B3E;    /* 닥터레터 다크그린 */
-            --accent: #B89661;     /* 골드 브라운 (고급감 강조) */
+            --accent: #B89661;     /* 골드 브라운 */
             --bg-beige: #F5F2ED;   /* 배경 베이지 */
             --card: #FFFFFF;
-            --text-main: #2C332D;  /* 짙은 녹회색 */
+            --text-main: #2C332D;
             --text-sub: #78827A;
             --border: #E5E1DA;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-beige); color: var(--text-main); line-height: 1.6; }
+        body { background-color: var(--bg-beige); color: var(--text-main); line-height: 1.6; padding-bottom: 120px; }
         
-        .container { max-width: 600px; margin: 0 auto; min-height: 100vh; background: var(--bg-beige); position: relative; padding-bottom: 120px; }
+        .container { max-width: 600px; margin: 0 auto; min-height: 100vh; position: relative; }
 
         /* [1] 보안 잠금 화면 */
         #lock-screen { position: fixed; inset: 0; background: var(--bg-beige); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .lock-icon { font-size: 56px; color: var(--primary); margin-bottom: 24px; opacity: 0.9; }
+        .lock-icon { font-size: 56px; color: var(--primary); margin-bottom: 24px; }
         .lock-title { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
         .lock-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 30px; word-break: keep-all; }
-        .dob-input { width: 100%; max-width: 280px; padding: 18px; font-size: 20px; text-align: center; border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; outline: none; letter-spacing: 4px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .dob-input:focus { border-color: var(--accent); }
+        .dob-input { width: 100%; max-width: 280px; padding: 18px; font-size: 20px; text-align: center; border: 1px solid var(--border); border-radius: 16px; margin-bottom: 15px; outline: none; letter-spacing: 4px; background: white; }
         .unlock-btn { width: 100%; max-width: 280px; padding: 18px; background-color: var(--primary); color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 10px 20px rgba(30, 75, 62, 0.2); }
         .error-msg { color: #D94E4E; font-size: 14px; margin-top: 10px; display: none; }
 
@@ -41,16 +40,16 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* [3] 리포트 헤더 */
-        .header { padding: 40px 25px 35px; background: var(--primary); color: white; border-radius: 0 0 40px 40px; text-align: center; box-shadow: 0 10px 30px rgba(30, 75, 62, 0.15); }
-        .clinic-logo-container { margin-bottom: 20px; display: flex; justify-content: center; }
-        .clinic-logo { height: 45px; max-width: 180px; object-fit: contain; filter: brightness(0) invert(1); } /* 로고를 흰색으로 반전 */
-        .clinic-name-text { font-size: 14px; font-weight: 600; opacity: 0.8; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        .header { padding: 40px 25px 35px; background: var(--primary); color: white; border-radius: 0 0 40px 40px; text-align: center; }
+        .clinic-logo-container { margin-bottom: 15px; display: flex; justify-content: center; align-items: center; min-height: 50px; }
+        .clinic-logo { height: 45px; max-width: 180px; object-fit: contain; filter: brightness(0) invert(1) !important; -webkit-filter: brightness(0) invert(1) !important; } 
+        .clinic-name-badge { font-size: 13px; font-weight: 600; opacity: 0.8; letter-spacing: 1px; margin-bottom: 8px; display: block; }
         .greeting h1 { font-size: 26px; font-weight: 800; line-height: 1.4; letter-spacing: -1px; }
         .greeting h1 span { color: #C5E9DE; }
 
         /* 카드 및 섹션 디자인 */
         .card { background: white; margin: 25px 20px; padding: 28px 22px; border-radius: 24px; border: 1px solid rgba(229, 225, 218, 0.5); box-shadow: 0 10px 25px rgba(0,0,0,0.03); }
-        .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-title { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .card-title i { width: 32px; height: 32px; background: #F0F4F2; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--primary); }
 
         .img-container { width: 100%; border-radius: 16px; overflow: hidden; margin-bottom: 20px; border: 1px solid #F1F1F1; }
@@ -58,11 +57,10 @@
 
         .content-box { background: #FAF9F7; padding: 22px; border-radius: 14px; border-left: 4px solid var(--primary); white-space: pre-wrap; font-size: 15px; color: #444; line-height: 1.8; word-break: keep-all; }
 
-        /* 이벤트 박스 (다크그린) */
+        /* 이벤트 박스 */
         .event-card { background: var(--primary); padding: 25px; border-radius: 20px; margin: 20px; color: white; position: relative; overflow: hidden; }
-        .event-card::after { content: '\f06b'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; }
         .event-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: #A7F3D0; }
-        .event-card p { font-size: 14px; line-height: 1.6; opacity: 0.95; }
+        .event-card p { font-size: 14px; line-height: 1.6; opacity: 0.95; white-space: pre-wrap; }
 
         /* 하단 고정 버튼 */
         .footer-cta { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; background: rgba(245, 242, 237, 0.9); backdrop-filter: blur(15px); padding: 20px; border-top: 1px solid var(--border); z-index: 100; }
@@ -72,7 +70,7 @@
     </style>
 </head>
 <body>
-    <div id="loading"><div class="spinner"></div><p style="margin-top:15px; color:var(--text-sub); font-weight:600;">데이터를 분석 중입니다...</p></div>
+    <div id="loading"><div class="spinner"></div><p style="margin-top:15px; color:var(--text-sub); font-weight:600;">리포트를 생성하고 있습니다...</p></div>
 
     <!-- 보안 잠금 화면 -->
     <div id="lock-screen" style="display:none;">
@@ -90,8 +88,8 @@
             <div class="clinic-logo-container" id="logo-box" style="display:none;">
                 <img id="clinic-logo" class="clinic-logo" src="" alt="병원 로고">
             </div>
-            <span class="clinic-name-text" id="clinic-name-badge">모리치과</span>
-            <div class="greeting"><h1><span id="patient">환자</span>님을 위해<br>정성껏 준비했습니다.</h1></div>
+            <span class="clinic-name-badge" id="clinic-badge-text">우리치과</span>
+            <div class="greeting"><h1><span id="patient-name-span">환자</span>님을 위해<br>정성껏 준비했습니다.</h1></div>
         </header>
 
         <!-- 섹션 1: 진단 사진 및 소견 -->
@@ -100,16 +98,16 @@
             <div class="img-container" id="diag-img-box" style="display:none;">
                 <img id="diag-img" src="" alt="진단 사진">
             </div>
-            <div id="opinion" class="content-box">진단 소견을 불러올 수 없습니다.</div>
+            <div id="opinion" class="content-box">상세 진단 소견을 불러오는 중입니다.</div>
         </div>
 
-        <!-- 섹션 2: 맞춤 치료 계획 (조건부) -->
+        <!-- 섹션 2: 맞춤 치료 계획 -->
         <div class="card" id="sec-plan" style="display:none;">
             <div class="card-title"><i class="fa-solid fa-clipboard-list"></i> 맞춤 치료 계획</div>
             <div id="plan" class="content-box"></div>
         </div>
 
-        <!-- 섹션 3: 참고용 치료 예시 (조건부) -->
+        <!-- 섹션 3: 참고용 치료 예시 -->
         <div class="card" id="sec-example" style="display:none;">
             <div class="card-title"><i class="fa-solid fa-wand-magic-sparkles"></i> 참고용 치료 예시</div>
             <div class="img-container" id="example-img-box">
@@ -117,13 +115,13 @@
             </div>
         </div>
 
-        <!-- 섹션 4: 병원 안내 및 이벤트 -->
+        <!-- 섹션 4: 병원 안내 (진료 원칙) -->
         <div class="card">
-            <div class="card-title"><i class="fa-solid fa-hospital-user"></i> 병원 안내</div>
+            <div class="card-title"><i class="fa-solid fa-hospital-user"></i> <span id="dynamic-clinic-principle">병원 진료 원칙</span></div>
             <div id="adv" style="padding: 0 5px; font-size: 15px; color: var(--text-sub); margin-bottom: 20px; white-space: pre-wrap;"></div>
             
             <div class="event-card" id="event-box" style="display:none;">
-                <h4><i class="fa-solid fa-certificate"></i> 현재 진행 중인 이벤트</h4>
+                <h4 id="dynamic-event-title"><i class="fa-solid fa-certificate"></i> 특별 혜택 안내</h4>
                 <p id="event-text"></p>
             </div>
         </div>
@@ -132,7 +130,6 @@
     </div>
 
     <script>
-        // 🚨 관리자님의 에어테이블 정보
         const AIRTABLE_TOKEN = "patoWJBEiYsg7SA3t.acb39f0bf976ca515ca3043e6a5e52129daff3f1c06066ad349079bb53b3d53f";
         const BASE_ID = "appxMuv95Sk0HyDyh";
         const TABLE_ID = "tblLZul1rejGLASDU";
@@ -142,7 +139,7 @@
         async function init() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
-            if(!id) return alert("아이디가 유효하지 않습니다.");
+            if(!id) return alert("유효하지 않은 링크입니다.");
 
             try {
                 const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
@@ -151,15 +148,23 @@
                 const data = await res.json();
                 const fields = data.fields;
 
-                // [데이터 검증 및 매핑]
+                // [데이터 매핑]
                 serverDOB = fields["환자생년월일"] || fields["생년월일"] || "000000";
-                document.getElementById('clinic-name-badge').innerText = fields["병원명(자동)"] || "모리치과";
-                document.getElementById('patient').innerText = fields["환자 성함"] || "환자";
-                document.getElementById('opinion').innerText = fields["진단 소견"] || "";
+                const clinicName = fields["병원명(자동)"] || "모리치과";
+                const patientName = fields["환자 성함"] || "환자";
 
-                // 1. 병원 로고 처리
+                document.getElementById('clinic-badge-text').innerText = clinicName;
+                document.getElementById('patient-name-span').innerText = patientName;
+                document.getElementById('opinion').innerText = fields["진단 소견"] || "내용이 없습니다.";
+
+                // 요청사항: 문구 변경 적용
+                document.getElementById('dynamic-clinic-principle').innerText = `${clinicName}의 흔들리지 않는 진료 원칙`;
+                document.getElementById('dynamic-event-title').innerHTML = `<i class="fa-solid fa-certificate"></i> ${patientName}님께 드리는 특별한 혜택`;
+
+                // 1. 병원 로고 처리 (필터 보강)
                 if(fields["병원로고(자동)"] && fields["병원로고(자동)"][0]) {
-                    document.getElementById('clinic-logo').src = fields["병원로고(자동)"][0].url;
+                    const logoImg = document.getElementById('clinic-logo');
+                    logoImg.src = fields["병원로고(자동)"][0].url;
                     document.getElementById('logo-box').style.display = 'flex';
                 }
                 
@@ -175,10 +180,11 @@
                     document.getElementById('sec-plan').style.display = 'block';
                 }
 
-                // 4. 치료전후 예시사진 (필드명 후보들 모두 체크)
-                const exampleImg = fields["치료전후 예시사진"] || fields["참고용 치료 예시"] || fields["예시사진"];
-                if(exampleImg && exampleImg[0]) {
-                    document.getElementById('example-img').src = exampleImg[0].url;
+                // 4. 치료전후 예시사진 (필드 이름 매핑 보강)
+                // 에어테이블에서 '치료전후 예시사진' 필드가 맞는지 꼭 확인해주세요.
+                const exampleImgField = fields["치료전후 예시사진"] || fields["예시사진"] || fields["참고용 치료 예시"];
+                if(exampleImgField && exampleImgField[0]) {
+                    document.getElementById('example-img').src = exampleImgField[0].url;
                     document.getElementById('sec-example').style.display = 'block';
                 }
 
@@ -196,7 +202,8 @@
                 document.getElementById('lock-screen').style.display = 'flex';
 
             } catch (err) {
-                alert("리포트를 불러오는 중 오류가 발생했습니다.");
+                console.error(err);
+                alert("리포트 정보를 가져오는 중 오류가 발생했습니다.");
             }
         }
 
