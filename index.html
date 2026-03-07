@@ -41,11 +41,11 @@
         .spinner { width: 45px; height: 45px; border: 4px solid #E5E1D8; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* [3] 프리미엄 헤더 */
+        /* [3] 프리미엄 헤더 (로고 캡슐 디자인 적용) */
         .header { padding: 45px 25px 40px; background: var(--primary); color: white; border-radius: 0 0 45px 45px; text-align: center; box-shadow: 0 10px 30px rgba(30, 75, 62, 0.2); }
-        .logo-area { display: inline-flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .clinic-logo { height: 40px; max-width: 180px; object-fit: contain; } /* 강제 반전 삭제, 흰색 배경 박스 */
-        .clinic-sub-name { font-size: 14px; font-weight: 600; opacity: 0.7; letter-spacing: 1.5px; margin-bottom: 8px; display: block; }
+        .clinic-brand-badge { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: #FFFFFF; padding: 10px 22px; border-radius: 50px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .clinic-logo { height: 26px; max-width: 120px; object-fit: contain; } /* 강제 반전 삭제, 텍스트 높이와 맞춤 */
+        .clinic-sub-name { font-size: 16px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
         .greeting h1 { font-size: 27px; font-weight: 800; line-height: 1.4; letter-spacing: -1.2px; }
         .greeting h1 span { color: #D1FAE5; }
 
@@ -88,10 +88,10 @@
     <!-- [2] 리포트 본문 -->
     <div class="container" id="main-content">
         <header class="header">
-            <div class="logo-area" id="logo-wrapper" style="display:none;">
-                <img id="hospital-logo" class="clinic-logo" src="" alt="병원 로고">
+            <div class="clinic-brand-badge">
+                <img id="hospital-logo" class="clinic-logo" src="" alt="병원 로고" style="display:none;">
+                <span class="clinic-sub-name" id="clinic-sub-badge">모리치과</span>
             </div>
-            <span class="clinic-sub-name" id="clinic-sub-badge">모리치과</span>
             <div class="greeting"><h1><span id="patient-name-top">환자</span>님을 위해<br>정성껏 준비했습니다.</h1></div>
         </header>
 
@@ -167,11 +167,12 @@
                 document.getElementById('principle-title').innerText = `${c_name}의 흔들리지 않는 진료 원칙`;
                 document.getElementById('benefit-title').innerHTML = `<i class="fa-solid fa-certificate"></i> ${p_name}님께 드리는 특별한 혜택`;
 
-                // 1. 병원 로고 (필드명 탐색 강화)
+                // 1. 병원 로고 (나란히 배치되도록 수정)
                 const logoData = fields["병원로고(자동)"] || fields["병원로고"] || fields["Logo"];
                 if(logoData && logoData[0]) {
-                    document.getElementById('hospital-logo').src = logoData[0].url;
-                    document.getElementById('logo-wrapper').style.display = 'flex';
+                    const logoImg = document.getElementById('hospital-logo');
+                    logoImg.src = logoData[0].url;
+                    logoImg.style.display = 'block';
                 }
                 
                 // 2. 진단 사진
