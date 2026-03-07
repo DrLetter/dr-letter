@@ -3,52 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dr. Letter - 진단 리포트</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <title>정밀 진단 리포트</title>
+    <!-- 폰트 및 아이콘 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* 기본 스타일 유지 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
-        body { background-color: #F8FAFC; color: #1E293B; line-height: 1.6; }
-        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background-color: #FFFFFF; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+        /* 새로운 블루 테마 변수 설정 */
+        :root {
+            --primary-blue: #2563EB; /* 메인 블루 */
+            --primary-light: #EFF6FF; /* 연한 블루 (소견 배경 등) */
+            --text-main: #1E293B; /* 진한 회색 (기본 텍스트) */
+            --text-sub: #64748B; /* 중간 회색 (설명 텍스트) */
+            --bg-color: #F8FAFC; /* 전체 배경색 */
+            --card-bg: #FFFFFF; /* 카드 배경색 */
+            --border-color: #E2E8F0; /* 테두리 색상 */
+            --event-bg: #FEF2F2; /* 이벤트 핑크 배경 */
+            --event-text: #BE123C; /* 이벤트 핑크 텍스트 */
+        }
 
-        /* 잠금 화면 */
-        #lock-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #FFFFFF; z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; text-align: center; }
-        .lock-icon { font-size: 48px; color: #1E4B3E; margin-bottom: 20px; }
-        .lock-title { font-size: 24px; font-weight: 800; color: #1E4B3E; margin-bottom: 10px; }
-        .lock-desc { font-size: 15px; color: #64748B; margin-bottom: 40px; }
-        .dob-input { width: 100%; max-width: 320px; padding: 16px; font-size: 18px; text-align: center; border: 2px solid #E2E8F0; border-radius: 12px; margin-bottom: 20px; outline: none; }
-        .dob-input:focus { border-color: #10B981; }
-        .unlock-btn { width: 100%; max-width: 320px; padding: 16px; background-color: #1E4B3E; color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-bottom: 90px; }
+        
+        /* 모바일 최적화 컨테이너 (시안처럼 깔끔하게) */
+        .app-container { max-width: 600px; margin: 0 auto; min-height: 100vh; background-color: var(--bg-color); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.03); }
+
+        /* 1. 보안 잠금 화면 (블루 테마) */
+        #lock-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--card-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
+        .lock-icon { font-size: 48px; color: var(--primary-blue); margin-bottom: 20px; }
+        .lock-title { font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+        .lock-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 30px; word-break: keep-all; }
+        .dob-input { width: 100%; max-width: 300px; padding: 16px; font-size: 18px; text-align: center; border: 2px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; outline: none; letter-spacing: 2px; transition: border-color 0.2s;}
+        .dob-input:focus { border-color: var(--primary-blue); }
+        .unlock-btn { width: 100%; max-width: 300px; padding: 16px; background-color: var(--primary-blue); color: white; font-size: 16px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; }
         .error-msg { color: #EF4444; font-size: 14px; margin-top: -10px; margin-bottom: 20px; display: none; }
 
-        /* 리포트 화면 */
-        #report-screen { display: none; padding-bottom: 40px; }
-        .clinic-header { background-color: #1E4B3E; color: white; padding: 30px 20px 50px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
-        .clinic-name { font-size: 16px; opacity: 0.9; }
-        .patient-greeting { font-size: 22px; font-weight: 800; margin-top: 5px; }
-        
-        .report-card { background: white; margin: -30px 20px 0; border-radius: 16px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); position: relative; z-index: 10; display: flex; flex-direction: column; gap: 24px; }
+        /* 2. 리포트 화면 */
+        #report-screen { display: none; padding: 20px 15px; }
 
-        /* 각 섹션별 스타일 */
-        .section-title { font-size: 14px; color: #10B981; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        
-        /* 1. 표준 치료 계획 (템플릿 내용) */
-        .template-text { font-size: 16px; color: #334155; line-height: 1.6; background: #F1F5F9; padding: 16px; border-radius: 12px; }
+        /* 헤더 섹션 (시안 동일) */
+        .header { margin-bottom: 24px; padding: 10px 5px; }
+        .clinic-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--primary-blue); font-weight: 700; font-size: 16px; }
+        .clinic-brand i { font-size: 18px; }
+        .greeting h1 { font-size: 24px; font-weight: 800; line-height: 1.4; margin-bottom: 8px; color: var(--text-main); }
+        .greeting h1 span { color: var(--primary-blue); }
+        .greeting p { color: var(--text-sub); font-size: 14px; }
 
-        /* 2. 원장님 맞춤 코멘트 (건바이건) */
-        .custom-comment { background-color: #F8FAFC; border-left: 4px solid #1E4B3E; padding: 16px; border-radius: 0 12px 12px 0; }
-        .custom-comment p { font-size: 15px; color: #475569; }
+        /* 공통 카드 스타일 */
+        .section-card { background-color: var(--card-bg); margin-bottom: 16px; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .section-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; color: var(--primary-blue); }
+        .section-title i { background: var(--primary-light); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 13px; }
 
-        /* 3. 진단 사진 */
-        .image-box { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #E2E8F0; }
-        .image-box img { width: 100%; display: block; }
+        /* 텍스트 줄바꿈 유지 필수 */
+        .preserve-lines { white-space: pre-wrap; word-break: keep-all; line-height: 1.7; }
 
-        /* 하단 버튼 */
-        .action-buttons { display: flex; gap: 10px; margin: 20px 20px 0; }
-        .btn { flex: 1; padding: 14px; text-align: center; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; }
-        .btn-call { background-color: #F1F5F9; color: #1E293B; }
-        .btn-book { background-color: #10B981; color: white; }
+        /* 카드 1: 환자 정보 Grid */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-item h4 { font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 4px; }
+        .info-item p { font-size: 15px; color: var(--text-main); font-weight: 600; }
+
+        /* 카드 2: 진단 소견 */
+        .image-placeholder { width: 100%; height: 200px; background-color: #F1F5F9; border-radius: 8px; border: 1px dashed #CBD5E1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94A3B8; margin-bottom: 16px; }
+        .image-placeholder i { font-size: 32px; margin-bottom: 8px; }
+        .opinion-box { background-color: var(--primary-light); padding: 16px; border-radius: 8px; color: var(--primary-blue); font-size: 14px; font-weight: 500; border-left: 3px solid var(--primary-blue); }
+
+        /* 카드 3: 맞춤 치료 계획 & 템플릿 */
+        .plan-text { font-size: 15px; color: var(--text-main); margin-bottom: 20px; font-weight: 600;}
+        .template-divider { border-top: 1px dashed var(--border-color); margin: 20px 0; }
+        .template-text { font-size: 14px; color: var(--text-sub); }
+
+        /* 카드 5: 병원 안내 & 이벤트 */
+        .adv-text { font-size: 14px; color: var(--text-main); margin-bottom: 20px; }
+        .event-banner { background-color: var(--event-bg); padding: 16px; border-radius: 8px; border: 1px solid #FECACA; }
+        .event-banner h4 { color: var(--event-text); font-size: 13px; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;}
+        .event-banner p { color: #9F1239; font-size: 13px; }
+
+        /* 하단 고정 CTA 버튼 (시안 동일) */
+        .sticky-bottom { position: fixed; bottom: 0; left: 0; right: 0; max-width: 600px; margin: 0 auto; padding: 16px 15px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px); border-top: 1px solid var(--border-color); z-index: 100; }
+        .cta-button { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background-color: var(--primary-blue); color: white; border: none; padding: 16px; border-radius: 8px; font-size: 16px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: background-color 0.2s; }
+        .cta-button:active { background-color: #1D4ED8; }
     </style>
 </head>
 <body>
@@ -57,112 +92,187 @@
     
     <!-- 1. 보안 잠금 화면 -->
     <div id="lock-screen">
-        <i class="fa-solid fa-shield-halved lock-icon"></i>
-        <h1 class="lock-title">안전한 진단 리포트</h1>
-        <p class="lock-desc">생년월일 6자리를 입력해 주세요.</p>
+        <i class="fa-solid fa-lock lock-icon"></i>
+        <h1 class="lock-title">개인정보 보호 잠금</h1>
+        <p class="lock-desc">안전한 리포트 확인을 위해<br>환자 본인의 <strong>생년월일 6자리</strong>를 입력해 주세요.</p>
         <input type="tel" id="dob-input" class="dob-input" placeholder="예: 850123" maxlength="6">
         <p id="error-msg" class="error-msg">생년월일이 일치하지 않습니다.</p>
         <button class="unlock-btn" onclick="unlockReport()">리포트 확인하기</button>
     </div>
 
-    <!-- 2. 진단 리포트 화면 -->
+    <!-- 2. 진단 리포트 화면 (시안 적용) -->
     <div id="report-screen">
-        <div class="clinic-header">
-            <div class="clinic-name" id="display-clinic-name">로딩중...</div>
-            <div class="patient-greeting" id="display-patient-name">데이터를 불러오는 중입니다.</div>
-        </div>
+        
+        <!-- 상단 헤더 -->
+        <header class="header">
+            <div class="clinic-brand">
+                <i class="fa-solid fa-tooth"></i>
+                <span id="disp-clinic-head">모리치과</span> 정밀 진단 리포트
+            </div>
+            <div class="greeting">
+                <h1><span id="disp-name">환자</span>님을 위해<br>정성껏 준비했습니다.</h1>
+                <p>오늘 상담하신 내용을 바탕으로 한 맞춤형 리포트입니다.</p>
+            </div>
+        </header>
 
-        <div class="report-card">
+        <!-- 섹션 1: 환자 정보 -->
+        <section class="section-card">
+            <h3 class="section-title"><i class="fa-regular fa-id-card"></i>환자 정보</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>환자 성함</h4>
+                    <p id="disp-name-card">환자</p>
+                </div>
+                <div class="info-item">
+                    <h4>상담 일자</h4>
+                    <p id="disp-date">2026. 01. 01</p>
+                </div>
+                <div class="info-item">
+                    <h4>생년월일</h4>
+                    <p id="disp-dob">000000</p>
+                </div>
+                <div class="info-item">
+                    <h4>연락처</h4>
+                    <p id="disp-patient-phone">010-0000-0000</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 섹션 2: 진단 사진 및 소견 -->
+        <section class="section-card">
+            <h3 class="section-title"><i class="fa-solid fa-stethoscope"></i>진단 사진 및 소견</h3>
+            <div class="image-placeholder">
+                <i class="fa-solid fa-x-ray"></i>
+                <span style="font-size:13px;">진단 사진</span>
+            </div>
+            <div class="opinion-box preserve-lines" id="disp-opinion">
+                <!-- 진단 소견 -->
+            </div>
+        </section>
+
+        <!-- 섹션 3: 맞춤 치료 계획 (계획 + 템플릿 통합) -->
+        <section class="section-card" id="sec-plan-container" style="display: none;">
+            <h3 class="section-title"><i class="fa-regular fa-calendar-check"></i>맞춤 치료 계획</h3>
             
-            <!-- 블록 A: 진단 사진 -->
-            <div id="block-image" style="display: none;">
-                <div class="section-title"><i class="fa-regular fa-image"></i> 참고 사진</div>
-                <div class="image-box">
-                    <img id="display-image" src="" alt="진단 사진">
-                </div>
-            </div>
+            <!-- 원장님 맞춤 계획 -->
+            <div class="plan-text preserve-lines" id="disp-plan" style="display: none;"></div>
+            
+            <div class="template-divider" id="plan-divider" style="display: none;"></div>
+            
+            <!-- 템플릿 표준 내용 -->
+            <div class="template-text preserve-lines" id="disp-template" style="display: none;"></div>
+        </section>
 
-            <!-- 블록 B: 표준 치료 계획 (템플릿) -->
-            <div id="block-template" style="display: none;">
-                <div class="section-title"><i class="fa-solid fa-file-medical"></i> 맞춤 치료 계획</div>
-                <div class="template-text" id="display-template-text">
-                </div>
+        <!-- 섹션 4: 참고용 치료 예시 -->
+        <section class="section-card">
+            <h3 class="section-title"><i class="fa-regular fa-image"></i>참고용 치료 예시</h3>
+            <div class="image-placeholder" style="height: 120px;">
+                <i class="fa-solid fa-teeth-open"></i>
+                <span style="font-size:13px;">치료 전후 참고 사진</span>
             </div>
+        </section>
 
-            <!-- 블록 C: 원장님 맞춤 코멘트 (진단소견) -->
-            <div id="block-custom" style="display: none;">
-                <div class="section-title"><i class="fa-solid fa-user-doctor"></i> 담당의 소견</div>
-                <div class="custom-comment">
-                    <p id="display-custom-text"></p>
-                </div>
+        <!-- 섹션 5: 병원 안내 및 이벤트 -->
+        <section class="section-card">
+            <h3 class="section-title"><i class="fa-regular fa-hospital"></i><span id="disp-clinic-title">모리치과</span> 안내</h3>
+            
+            <!-- 병원 장점 -->
+            <div class="adv-text preserve-lines" id="disp-adv"></div>
+            
+            <!-- 이벤트 배너 (내용 없으면 숨김) -->
+            <div class="event-banner" id="sec-event" style="display: none;">
+                <h4><i class="fa-solid fa-gift"></i> 현재 진행 중인 혜택</h4>
+                <p class="preserve-lines" id="disp-event"></p>
             </div>
+        </section>
 
+        <!-- 하단 고정 예약 버튼 -->
+        <div class="sticky-bottom">
+            <a href="#" id="disp-phone" class="cta-button">
+                <i class="fa-regular fa-calendar-check"></i>
+                치료 예약 및 상담 문의하기
+            </a>
         </div>
 
-        <div class="action-buttons">
-            <a href="#" class="btn btn-call"><i class="fa-solid fa-phone"></i> 병원 전화하기</a>
-        </div>
     </div>
-
 </div>
 
 <script>
-    // URL에서 에어테이블 데이터를 읽어오는 마법의 로봇
+    // URL 파라미터 가져오기
     const urlParams = new URLSearchParams(window.location.search);
     
-    // 에어테이블에서 날아온 데이터들 (url 파라미터)
-    const patientData = {
-        clinicName: urlParams.get('clinic') || "모리치과", // 기본값
-        patientName: urlParams.get('name') || "환자",
-        dob: urlParams.get('dob') || "850123", // 테스트용 기본 비밀번호
-        imageUrl: urlParams.get('img') || "",
-        templateContent: urlParams.get('plan') || "",
-        customComment: urlParams.get('comment') || ""
-    };
+    // 에어테이블 데이터 변수 할당
+    const p_name = urlParams.get('name') || "환자";
+    const p_clinic = urlParams.get('clinic') || "모리치과";
+    const p_dob = urlParams.get('dob') || "000000";
+    const p_date = urlParams.get('date') || "기록없음";
+    const p_opinion = urlParams.get('opinion') || "진단 소견이 없습니다.";
+    const p_template = urlParams.get('template') || ""; 
+    const p_plan = urlParams.get('plan') || "";         
+    const p_adv = urlParams.get('adv') || "환자를 최우선으로 생각합니다.";
+    const p_event = urlParams.get('event') || "";       
+    const p_phone = urlParams.get('phone') || "000-0000-0000";
 
     function unlockReport() {
         const input = document.getElementById('dob-input').value;
         
-        // 입력한 비밀번호(생년월일)가 환자 데이터와 일치하면 통과!
-        if(input === patientData.dob || input === "000000") { // 000000은 마스터키 (테스트용)
+        // 생년월일 검증 (마스터키 000000)
+        if(input === p_dob || input === "000000") {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('report-screen').style.display = 'block';
             
-            // 화면에 데이터 뿌리기
-            document.getElementById('display-clinic-name').innerText = patientData.clinicName;
-            document.getElementById('display-patient-name').innerText = patientData.patientName + " 님의 진단 결과";
+            // 기본 데이터 뿌리기
+            document.getElementById('disp-clinic-head').innerText = p_clinic;
+            document.getElementById('disp-clinic-title').innerText = p_clinic;
+            document.getElementById('disp-name').innerText = p_name;
+            document.getElementById('disp-name-card').innerText = p_name;
+            document.getElementById('disp-dob').innerText = p_dob;
+            document.getElementById('disp-date').innerText = p_date;
+            document.getElementById('disp-patient-phone').innerText = "보안 처리됨"; // 환자 연락처는 보안상 가림
+            document.getElementById('disp-opinion').innerText = p_opinion;
+            document.getElementById('disp-adv').innerText = p_adv;
+            document.getElementById('disp-phone').href = "tel:" + p_phone;
 
-            if (patientData.imageUrl !== "") {
-                document.getElementById('display-image').src = patientData.imageUrl;
-                document.getElementById('block-image').style.display = 'block';
+            // 조건부 마법 (맞춤치료계획 & 템플릿)
+            let showPlanSection = false;
+            
+            if (p_plan.trim() !== "") {
+                document.getElementById('disp-plan').innerText = p_plan;
+                document.getElementById('disp-plan').style.display = 'block';
+                showPlanSection = true;
+            }
+            
+            if (p_template.trim() !== "") {
+                document.getElementById('disp-template').innerText = p_template;
+                document.getElementById('disp-template').style.display = 'block';
+                showPlanSection = true;
             }
 
-            if (patientData.templateContent !== "") {
-                document.getElementById('display-template-text').innerText = patientData.templateContent;
-                document.getElementById('block-template').style.display = 'block';
+            // 둘 다 있으면 중간에 점선(구분선) 보여주기
+            if (p_plan.trim() !== "" && p_template.trim() !== "") {
+                document.getElementById('plan-divider').style.display = 'block';
             }
 
-            if (patientData.customComment !== "") {
-                document.getElementById('display-custom-text').innerText = patientData.customComment;
-                document.getElementById('block-custom').style.display = 'block';
+            // 둘 중 하나라도 있으면 해당 카드 섹션 자체를 보여주기
+            if (showPlanSection) {
+                document.getElementById('sec-plan-container').style.display = 'block';
+            }
+
+            // 조건부 마법 (이벤트)
+            if (p_event.trim() !== "") {
+                document.getElementById('disp-event').innerText = p_event;
+                document.getElementById('sec-event').style.display = 'block';
             }
 
             window.scrollTo(0, 0);
         } else {
             document.getElementById('error-msg').style.display = 'block';
-            
-            // 틀렸을 때 입력창 흔들림 효과
-            const dobInput = document.getElementById('dob-input');
-            dobInput.style.transform = 'translateX(-10px)';
-            setTimeout(() => dobInput.style.transform = 'translateX(10px)', 100);
-            setTimeout(() => dobInput.style.transform = 'translateX(-10px)', 200);
-            setTimeout(() => dobInput.style.transform = 'translateX(0)', 300);
         }
     }
 
     // 엔터키 지원
     document.getElementById('dob-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') checkDOB();
+        if (e.key === 'Enter') unlockReport();
     });
 </script>
 
