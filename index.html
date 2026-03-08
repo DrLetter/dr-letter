@@ -32,7 +32,7 @@
         .greeting h2 span { color: #A7F3D0; }
 
         /* 카드 섹션 */
-        .section-card { background: white; margin: 20px; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #E5E1D8; display: none; /* 기본은 숨김 */ }
+        .section-card { background: white; margin: 20px; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #E5E1D8; display: none; }
         .section-title { font-size: 15px; font-weight: 800; color: var(--brand-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .section-title i { background: #F3F7F5; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 
@@ -46,6 +46,9 @@
         .clinic-info-list li { margin-bottom: 12px; padding: 12px; background: #F8FAFC; border-radius: 12px; border: 1px solid #EDF2F7; }
         .clinic-info-list strong { display: block; font-size: 14px; color: var(--brand-dark); margin-bottom: 4px; }
         .clinic-info-list p { font-size: 14px; color: var(--text-gray); }
+
+        /* 🚨 하단 주석 스타일링 */
+        .image-caption { font-size: 12px; color: var(--text-gray); text-align: center; margin-top: 8px; line-height: 1.4; letter-spacing: -0.2px; }
     </style>
 </head>
 <body>
@@ -80,13 +83,14 @@
         <div class="content-text" id="text-template"></div>
     </section>
 
-    <!-- 섹션 3: 참고용 치료 예시 사진 (문구 수정 완료!) -->
+    <!-- 섹션 3: 유사 증례 치료 사진 (하단 주석 문구 업데이트) -->
     <section class="section-card" id="card-example">
-        <h3 class="section-title"><i class="fa-solid fa-images"></i> 참고용 치료 예시 사진</h3>
+        <h3 class="section-title"><i class="fa-solid fa-images"></i> 유사 증례 치료 사진</h3>
         <div class="img-box">
-            <img id="example-img" src="" alt="예시사진">
+            <img id="example-img" src="" alt="증례사진">
         </div>
-        <p style="font-size: 13px; color: var(--text-gray); text-align: center;">※ 위 사진은 이해를 돕기 위한 유사 사례 예시입니다.</p>
+        <!-- 🚨 관리자님 요청 반영: 세련된 안내 문구 삽입 -->
+        <p class="image-caption">* 본 사진은 이해를 돕기 위한 비슷한 증례이며, 개인별로 결과가 상이할 수 있습니다.</p>
     </section>
 
     <!-- 섹션 4: 병원 안내 -->
@@ -100,7 +104,6 @@
 </div>
 
 <script>
-    // 1. 설정값 (관리자님의 정보로 유지됨)
     const AIRTABLE_TOKEN = "patHq8v7CqGvS64Gz.e29d67df76735a9299447432b0f4d380e28f32274b341f2372223a56a6f10359";
     const BASE_ID = "appOfh2fTStQ6Cg2m";
     const TABLE_ID = "tbl8NfS0vY60FzFge";
@@ -117,11 +120,9 @@
             const result = await response.json();
             const fields = result.fields;
 
-            // 데이터 뿌리기
             document.getElementById('clinic-name').innerText = fields["병원명(자동)"] || "우리병원";
             document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
 
-            // 진단 소견 & 사진
             if(fields["진단 소견"]) {
                 document.getElementById('text-opinion').innerText = fields["진단 소견"];
                 document.getElementById('card-opinion').style.display = 'block';
@@ -131,20 +132,20 @@
                 document.getElementById('box-diagnosis-img').style.display = 'block';
             }
 
-            // 맞춤 치료 계획 (템플릿)
             if(fields["맞춤치료계획"]) {
                 document.getElementById('text-template').innerText = fields["맞춤치료계획"];
                 document.getElementById('card-template').style.display = 'block';
             }
 
-            // 🚨 관리자님이 만드신 필드명 "참고용 치료 전후 예시 사진(자동)" 완벽 매칭 로직 유지
-            const exPhoto = fields["참고용 치료 전후 예시 사진(자동)"] || fields["참고용 치료 전후 예시 사진"];
+            const exPhoto = fields["유사 증례 치료 사진(자동)"] 
+                         || fields["유사 증례 치료 사진"]
+                         || fields["참고용 치료 전후 예시 사진(자동)"];
+                             
             if(exPhoto && exPhoto.length > 0 && exPhoto[0].url) {
                 document.getElementById('example-img').src = exPhoto[0].url;
                 document.getElementById('card-example').style.display = 'block';
             }
 
-            // 병원 안내 & 이벤트
             if(fields["우리병원의 장점 (from 담당원장님)"]) {
                 document.getElementById('adv-content').innerText = fields["우리병원의 장점 (from 담당원장님)"];
                 document.getElementById('card-info').style.display = 'block';
@@ -155,13 +156,12 @@
                 document.getElementById('card-info').style.display = 'block';
             }
 
-            // 로딩 종료
             document.getElementById('loading-screen').style.display = 'none';
 
         } catch (error) {
-            console.error("데이터 로드 실패:", error);
+            console.error("로드 실패:", error);
             const loadingP = document.querySelector('#loading-screen p');
-            if(loadingP) loadingP.innerText = "데이터를 불러오지 못했습니다. 링크를 다시 확인해 주세요.";
+            if(loadingP) loadingP.innerText = "데이터 로드 오류가 발생했습니다.";
         }
     }
 
