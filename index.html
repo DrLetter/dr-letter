@@ -40,11 +40,11 @@
         
         .clinic-brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; width: 100%; }
         
-        /* 🚨 로고 박스: 흰색 테두리(배경) 완전히 제거! */
+        /* 로고 박스 */
         .clinic-logo-box { 
             display: flex; align-items: center; justify-content: center; 
-            background: transparent !important; /* 배경 강제 투명화 */
-            padding: 0; /* 패딩 제거하여 로고만 깔끔하게 */
+            background: transparent !important; 
+            padding: 0; 
             min-width: 30px;
             height: 40px;
         }
@@ -174,7 +174,7 @@
             document.getElementById('badge-text').innerText = clinicName + " 정밀 진단 리포트";
             document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
             
-            // 🚨 로고 연동
+            // 로고 연동
             const logoField = fields["병원로고(자동)"];
             let finalLogoUrl = "";
 
@@ -188,14 +188,14 @@
                 }
             }
 
-            // 🚨 로고 배경 완전 투명화 처리
+            // 🚨 로고가 없을 때 기본 아이콘을 편지봉투(fa-envelope)로 변경!
             const logoContainer = document.getElementById('logo-container');
             if (finalLogoUrl) {
-                logoContainer.style.background = 'transparent'; // 하얀 박스 제거!
+                logoContainer.style.background = 'transparent'; 
                 logoContainer.innerHTML = `<img src="${finalLogoUrl}" alt="Logo" onerror="this.style.display='none'">`;
             } else {
                 logoContainer.style.background = 'transparent';
-                logoContainer.innerHTML = `<i class="fa-solid fa-tooth" style="font-size: 28px; color: white;"></i>`;
+                logoContainer.innerHTML = `<i class="fa-regular fa-envelope" style="font-size: 28px; color: white;"></i>`;
             }
 
             if(fields["전화걸기링크"] || fields["병원연락처(자동)"]) {
