@@ -35,22 +35,23 @@
 
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; display: none; }
 
-        /* 🚨 헤더 디자인: 로고와 타이틀 수평 배치 및 크기 극대화 */
+        /* 🚨 헤더 디자인: 밸런스 최종 조정 */
         .header { background-color: var(--brand-dark); padding: 55px 20px 50px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; text-align: center; color: white; box-shadow: 0 12px 35px rgba(0,0,0,0.15); }
         
-        /* 1. 병원 메인 타이틀 (가장 크게! 로고와 명칭이 주인공) */
-        .clinic-brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; }
-        .clinic-logo-box { display: flex; align-items: center; justify-content: center; min-width: 30px; }
+        /* 메인 타이틀: 로고 + 병원명 (28px) */
+        .clinic-brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 22px; width: 100%; }
+        .clinic-logo-box { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .clinic-logo-box img { max-height: 38px; width: auto; object-fit: contain; filter: brightness(0) invert(1); } /* 흰색 로고 반전 */
-        .clinic-logo-box i { font-size: 28px; color: white; }
+        .clinic-logo-box i { font-size: 26px; color: white; }
         
+        /* 🚨 관리자님 요청: 메인 제목 크기 대폭 확대 */
         .clinic-main-title { font-size: 28px !important; font-weight: 800; color: white; letter-spacing: -1px; line-height: 1.2; word-break: keep-all; }
 
-        /* 2. 환자 인사말 (타이틀보다 작게 조절) */
+        /* 🚨 관리자님 요청: 환자 인사말 세련되게 축소 */
         .greeting-sub { font-size: 19px !important; font-weight: 600; color: rgba(255,255,255,0.9); line-height: 1.5; letter-spacing: -0.4px; }
         .greeting-sub span { color: #A7F3D0; font-weight: 800; }
 
-        /* 카드 섹션 스타일 */
+        /* 카드 섹션 */
         .section-card { background: white; margin: 20px; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #E5E1D8; display: none; }
         .section-title { font-size: 15px; font-weight: 800; color: var(--brand-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .section-title i { background: #F3F7F5; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -90,15 +91,15 @@
 
 <div class="app-container" id="report-app">
     <header class="header">
-        <!-- 🚨 핵심 레이아웃: 로고와 제목을 한 줄로, 그리고 크게! -->
+        <!-- 🚨 메인 타이틀: 로고와 병원명을 한 줄로 나열 -->
         <div class="clinic-brand-header">
             <div class="clinic-logo-box" id="logo-container">
-                <i class="fa-solid fa-tooth"></i>
+                <i class="fa-solid fa-tooth"></i> <!-- 기본 아이콘 -->
             </div>
-            <div class="clinic-main-title" id="badge-text">닥터병원 정밀 진단 리포트</div>
+            <div class="clinic-main-title" id="badge-text">병원 정밀 진단 리포트</div>
         </div>
 
-        <!-- 🚨 인사말: 타이틀보다 작은 사이즈로 배치 -->
+        <!-- 🚨 인사말: 타이틀보다 작은 위계 -->
         <div class="greeting-sub">
             <span id="patient-name">환자</span>님을 위해<br>정성껏 준비했습니다.
         </div>
@@ -141,7 +142,7 @@
 </div>
 
 <script>
-    // Airtable 설정 정보 (최신 정보 유지)
+    // Airtable 설정 정보 유지
     const AIRTABLE_TOKEN = "patLaJUuWZN8mqVKa.cc49eaf357f0ed1247ed35c9495e2b171bf84cfccf4e4d3c44ecae2fbe1fd2d9";
     const BASE_ID = "appxMuv95Sk0HyDyh"; 
     const TABLE_ID = "tbllZuI1rejGLAsDU"; 
@@ -164,10 +165,10 @@
             document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
             document.getElementById('badge-text').innerText = (fields["병원명(자동)"] || "우리병원") + " 정밀 진단 리포트";
             
-            // 🚨 로고 연동 복구: 룩업 필드의 특성을 고려한 2중 체크 로직
-            const logoData = fields["병원로고(자동)"];
-            if (logoData && Array.isArray(logoData) && logoData.length > 0) {
-                const logoUrl = logoData[0].url;
+            // 🚨 [로고 연동 최종 해결] 에어테이블 첨부파일 배열 낚아채기
+            const logoField = fields["병원로고(자동)"];
+            if (logoField && Array.isArray(logoField) && logoField.length > 0) {
+                const logoUrl = logoField[0].url; // 첫 번째 사진의 진짜 주소
                 document.getElementById('logo-container').innerHTML = `<img src="${logoUrl}" alt="Logo" style="display:block;">`;
             }
 
@@ -179,8 +180,9 @@
                 document.getElementById('text-opinion').innerText = fields["진단 소견"];
                 document.getElementById('card-opinion').style.display = 'block';
             }
-            if(fields["진단 사진"] && fields["진단 사진"].length > 0) {
-                document.getElementById('diagnosis-img').src = fields["진단 사진"][0].url;
+            const diagnosisImg = fields["진단 사진"] || fields["진단사진"];
+            if(diagnosisImg && Array.isArray(diagnosisImg) && diagnosisImg.length > 0) {
+                document.getElementById('diagnosis-img').src = diagnosisImg[0].url;
                 document.getElementById('box-diagnosis-img').style.display = 'block';
                 document.getElementById('card-opinion').style.display = 'block';
             }
@@ -189,7 +191,7 @@
                 document.getElementById('card-template').style.display = 'block';
             }
             const exPhoto = fields["유사 증례 치료 사진(자동)"] || fields["유사 증례 치료 사진"];
-            if(exPhoto && exPhoto.length > 0) {
+            if(exPhoto && Array.isArray(exPhoto) && exPhoto.length > 0) {
                 document.getElementById('example-img').src = exPhoto[0].url;
                 document.getElementById('card-example').style.display = 'block';
             }
@@ -211,7 +213,7 @@
 
         } catch (error) {
             console.error("데이터 로드 실패:", error);
-            document.querySelector('#loading-screen p').innerText = "데이터 로드 실패 (ID/토큰 확인 필요)";
+            document.querySelector('#loading-screen p').innerText = "데이터를 불러올 수 없습니다. (ID/토큰 확인 필요)";
         }
     }
 
