@@ -55,7 +55,6 @@
 <div id="loading-screen">
     <div class="spinner"></div>
     <p>리포트를 안전하게 불러오는 중...</p>
-    <div id="debug-info" style="font-size: 10px; color: #ccc; margin-top: 20px;"></div>
 </div>
 
 <div class="app-container">
@@ -103,15 +102,14 @@
 </div>
 
 <script>
-    // Airtable 설정 정보 (관리자님 정보 유지)
+    // 🚨 [ID 업데이트 완료] 관리자님이 주신 새로운 주소창 정보 반영
     const AIRTABLE_TOKEN = "patHq8v7CqGvS64Gz.e29d67df76735a9299447432b0f4d380e28f32274b341f2372223a56a6f10359";
-    const BASE_ID = "appOfh2fTStQ6Cg2m";
-    const TABLE_ID = "tbl8NfS0vY60FzFge";
+    const BASE_ID = "appxMuv95Sk0HyDyh"; // 업데이트됨
+    const TABLE_ID = "tbllZuI1rejGLAsDU"; // 업데이트됨
 
     async function fetchAirtable() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        const debug = document.getElementById('debug-info');
         
         if (!id) {
             document.querySelector('#loading-screen p').innerText = "리포트 ID를 찾을 수 없습니다.";
@@ -123,24 +121,27 @@
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
             });
             
-            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(`서버 응답 오류: ${response.status} (${errData.error.message || ''})`);
+            }
             
             const result = await response.json();
             const fields = result.fields;
-            if (!fields) throw new Error("필드 데이터를 찾을 수 없습니다.");
+            if (!fields) throw new Error("데이터 필드를 찾을 수 없습니다.");
 
-            // 1. 병원명 & 환자명 (유연한 매칭)
+            // 1. 기본 텍스트 연동 (병원명, 환자명)
             document.getElementById('clinic-name').innerText = fields["병원명(자동)"] || fields["병원명"] || "우리병원";
-            document.getElementById('patient-name').innerText = fields["환자 성함"] || fields["환자명"] || "환자";
+            document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
 
-            // 2. 진단 소견 (공백 유무 상관없이 매칭)
-            const opinionText = fields["진단 소견"] || fields["진단소견"] || fields["종합소견"];
+            // 2. 진단 소견 (공백 보정)
+            const opinionText = fields["진단 소견"] || fields["진단소견"];
             if(opinionText) {
                 document.getElementById('text-opinion').innerText = opinionText;
                 document.getElementById('card-opinion').style.display = 'block';
             }
 
-            // 3. 진단 사진 (🚨 공백 유무 정밀 체크)
+            // 3. 진단 사진 (공백 보정)
             const diagImg = fields["진단 사진"] || fields["진단사진"];
             if(diagImg && Array.isArray(diagImg) && diagImg.length > 0) {
                 document.getElementById('diagnosis-img').src = diagImg[0].url;
@@ -149,33 +150,32 @@
             }
 
             // 4. 맞춤 치료 계획
-            const planText = fields["맞춤치료계획"] || fields["맞춤 치료 계획"] || fields["치료계획"];
+            const planText = fields["맞춤치료계획"] || fields["맞춤 치료 계획"];
             if(planText) {
                 document.getElementById('text-template').innerText = planText;
                 document.getElementById('card-template').style.display = 'block';
             }
 
-            // 5. 유사 증례 치료 사진 (🚨 관리자님 스크린샷 명칭 100% 매칭)
+            // 5. 유사 증례 치료 사진 (관리자님 최신 명칭)
             const exPhoto = fields["유사 증례 치료 사진(자동)"] 
                          || fields["유사 증례 치료 사진"] 
-                         || fields["참고용 치료 전후 예시 사진(자동)"]
-                         || fields["유사증례치료사진"];
+                         || fields["참고용 치료 전후 예시 사진(자동)"];
                              
             if(exPhoto && Array.isArray(exPhoto) && exPhoto.length > 0) {
                 document.getElementById('example-img').src = exPhoto[0].url;
                 document.getElementById('card-example').style.display = 'block';
             }
 
-            // 6. 병원 안내 및 혜택 (전체 가로지르는 매칭)
+            // 6. 병원 안내 (장점 & 이벤트)
             let hasInfo = false;
-            const adv = fields["우리병원의 장점 (from 담당원장님)"] || fields["우리병원의 장점"] || fields["데모보기 우리병원장점"];
+            const adv = fields["우리병원의 장점 (from 담당원장님)"] || fields["우리병원의 장점"];
             if(adv) {
                 document.getElementById('adv-content').innerText = adv;
                 document.getElementById('li-adv').style.display = 'block';
                 hasInfo = true;
             }
             
-            const event = fields["우리병원의 이벤트 (from 담당원장님)"] || fields["우리병원의 이벤트"] || fields["데모보기 우리병원이벤트"];
+            const event = fields["우리병원의 이벤트 (from 담당원장님)"] || fields["우리병원의 이벤트"];
             if(event) {
                 document.getElementById('event-content').innerText = event;
                 document.getElementById('li-event').style.display = 'block';
@@ -189,7 +189,7 @@
         } catch (error) {
             console.error(error);
             document.querySelector('#loading-screen p').innerHTML = 
-                `데이터를 불러오지 못했습니다.<br><span style="font-size:12px; color:red;">사유: ${error.message}</span>`;
+                `데이터를 불러오지 못했습니다.<br><span style="font-size:12px; color:red;">오류: ${error.message}</span><br><br><small>※ 에어테이블 토큰의 'Access' 설정에 새 베이스가 추가되었는지 꼭 확인해 주세요!</small>`;
         }
     }
 
