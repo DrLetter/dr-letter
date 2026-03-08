@@ -25,7 +25,7 @@
 
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; }
 
-        /* 헤더 디자인 */
+        /* 헤더 */
         .header { background-color: var(--brand-dark); padding: 50px 25px 35px; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .clinic-badge { display: inline-flex; align-items: center; background: white; color: var(--brand-dark); padding: 6px 16px; border-radius: 50px; font-weight: 800; font-size: 13px; margin-bottom: 15px; gap: 6px; }
         .greeting h2 { font-size: 24px; font-weight: 800; line-height: 1.4; }
@@ -47,7 +47,7 @@
         .clinic-info-list strong { display: block; font-size: 14px; color: var(--brand-dark); margin-bottom: 4px; }
         .clinic-info-list p { font-size: 14px; color: var(--text-gray); }
 
-        /* 🚨 하단 주석 스타일링 */
+        /* 하단 주석 */
         .image-caption { font-size: 12px; color: var(--text-gray); text-align: center; margin-top: 8px; line-height: 1.4; letter-spacing: -0.2px; }
     </style>
 </head>
@@ -68,7 +68,6 @@
         </div>
     </header>
 
-    <!-- 섹션 1: 진단 소견 -->
     <section class="section-card" id="card-opinion">
         <h3 class="section-title"><i class="fa-solid fa-stethoscope"></i> 진단 소견</h3>
         <div class="img-box" id="box-diagnosis-img" style="display:none;">
@@ -77,33 +76,31 @@
         <div class="content-text" id="text-opinion"></div>
     </section>
 
-    <!-- 섹션 2: 맞춤 치료 계획 -->
     <section class="section-card" id="card-template">
         <h3 class="section-title"><i class="fa-solid fa-list-check"></i> 맞춤 치료 계획</h3>
         <div class="content-text" id="text-template"></div>
     </section>
 
-    <!-- 섹션 3: 유사 증례 치료 사진 (하단 주석 문구 업데이트) -->
+    <!-- 유사 증례 치료 사진 섹션 -->
     <section class="section-card" id="card-example">
         <h3 class="section-title"><i class="fa-solid fa-images"></i> 유사 증례 치료 사진</h3>
         <div class="img-box">
             <img id="example-img" src="" alt="증례사진">
         </div>
-        <!-- 🚨 관리자님 요청 반영: 세련된 안내 문구 삽입 -->
         <p class="image-caption">* 본 사진은 이해를 돕기 위한 비슷한 증례이며, 개인별로 결과가 상이할 수 있습니다.</p>
     </section>
 
-    <!-- 섹션 4: 병원 안내 -->
     <section class="section-card" id="card-info">
         <h3 class="section-title"><i class="fa-solid fa-hospital"></i> 병원 안내</h3>
         <ul class="clinic-info-list">
-            <li><strong id="adv-title">우리병원의 장점</strong><p id="adv-content"></p></li>
-            <li id="li-event" style="background:#FFF1F2; border-color:#FECACA;"><strong style="color:#E11D48;">현재 진행 중인 혜택</strong><p id="event-content" style="color:#9F1239;"></p></li>
+            <li id="li-adv"><strong>우리병원의 장점</strong><p id="adv-content"></p></li>
+            <li id="li-event" style="background:#FFF1F2; border-color:#FECACA; display:none;"><strong style="color:#E11D48;">현재 진행 중인 혜택</strong><p id="event-content" style="color:#9F1239;"></p></li>
         </ul>
     </section>
 </div>
 
 <script>
+    // 🚨 관리자님: 토큰과 ID가 아래와 일치하는지 꼭 확인해 주세요! (기존 정보 유지)
     const AIRTABLE_TOKEN = "patHq8v7CqGvS64Gz.e29d67df76735a9299447432b0f4d380e28f32274b341f2372223a56a6f10359";
     const BASE_ID = "appOfh2fTStQ6Cg2m";
     const TABLE_ID = "tbl8NfS0vY60FzFge";
@@ -111,57 +108,80 @@
     async function fetchAirtable() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        if (!id) return;
+        if (!id) {
+            document.querySelector('#loading-screen p').innerText = "환자 ID가 없습니다. 링크를 다시 확인해 주세요.";
+            return;
+        }
 
         try {
             const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
             });
+            
+            if (!response.ok) throw new Error("Airtable 연동 실패");
+            
             const result = await response.json();
             const fields = result.fields;
 
+            // 1. 기본 텍스트
             document.getElementById('clinic-name').innerText = fields["병원명(자동)"] || "우리병원";
             document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
 
+            // 2. 진단 소견 & 사진
             if(fields["진단 소견"]) {
                 document.getElementById('text-opinion').innerText = fields["진단 소견"];
                 document.getElementById('card-opinion').style.display = 'block';
             }
-            if(fields["진단사진"] && fields["진단사진"].length > 0) {
-                document.getElementById('diagnosis-img').src = fields["진단사진"][0].url;
+            const diagImg = fields["진단사진"];
+            if(diagImg && diagImg.length > 0) {
+                document.getElementById('diagnosis-img').src = diagImg[0].url;
                 document.getElementById('box-diagnosis-img').style.display = 'block';
+                document.getElementById('card-opinion').style.display = 'block';
             }
 
+            // 3. 맞춤 치료 계획
             if(fields["맞춤치료계획"]) {
                 document.getElementById('text-template').innerText = fields["맞춤치료계획"];
                 document.getElementById('card-template').style.display = 'block';
             }
 
+            // 4. 🚨 [지능형 매칭] 유사 증례 치료 사진
             const exPhoto = fields["유사 증례 치료 사진(자동)"] 
-                         || fields["유사 증례 치료 사진"]
-                         || fields["참고용 치료 전후 예시 사진(자동)"];
+                         || fields["유사 증례 치료 사진"] 
+                         || fields["참고용 치료 전후 예시 사진(자동)"]
+                         || fields["참고용 치료 전후 예시 사진"];
                              
-            if(exPhoto && exPhoto.length > 0 && exPhoto[0].url) {
+            if(exPhoto && exPhoto.length > 0) {
                 document.getElementById('example-img').src = exPhoto[0].url;
                 document.getElementById('card-example').style.display = 'block';
             }
 
-            if(fields["우리병원의 장점 (from 담당원장님)"]) {
-                document.getElementById('adv-content').innerText = fields["우리병원의 장점 (from 담당원장님)"];
-                document.getElementById('card-info').style.display = 'block';
-            }
-            if(fields["우리병원의 이벤트 (from 담당원장님)"]) {
-                document.getElementById('event-content').innerText = fields["우리병원의 이벤트 (from 담당원장님)"];
-                document.getElementById('li-event').style.display = 'block';
-                document.getElementById('card-info').style.display = 'block';
+            // 5. 병원 안내 (장점 & 이벤트)
+            let hasInfo = false;
+            const adv = fields["우리병원의 장점 (from 담당원장님)"];
+            if(adv) {
+                document.getElementById('adv-content').innerText = adv;
+                document.getElementById('li-adv').style.display = 'block';
+                hasInfo = true;
+            } else {
+                document.getElementById('li-adv').style.display = 'none';
             }
 
+            const event = fields["우리병원의 이벤트 (from 담당원장님)"];
+            if(event) {
+                document.getElementById('event-content').innerText = event;
+                document.getElementById('li-event').style.display = 'block';
+                hasInfo = true;
+            }
+            
+            if(hasInfo) document.getElementById('card-info').style.display = 'block';
+
+            // 로딩 숨김
             document.getElementById('loading-screen').style.display = 'none';
 
         } catch (error) {
-            console.error("로드 실패:", error);
-            const loadingP = document.querySelector('#loading-screen p');
-            if(loadingP) loadingP.innerText = "데이터 로드 오류가 발생했습니다.";
+            console.error(error);
+            document.querySelector('#loading-screen p').innerText = "데이터 로드 오류가 발생했습니다. 필드 이름을 확인해 주세요.";
         }
     }
 
