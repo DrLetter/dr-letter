@@ -35,28 +35,25 @@
 
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; display: none; }
 
-        /* 🚨 헤더 디자인: 로고 연동 및 폰트 밸런스 최종 최적화 */
+        /* 헤더 디자인 */
         .header { background-color: var(--brand-dark); padding: 55px 20px 50px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; text-align: center; color: white; box-shadow: 0 12px 35px rgba(0,0,0,0.15); }
         
-        /* 메인 타이틀 행 (로고 + 병원명) */
         .clinic-brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; width: 100%; }
         
-        /* 🚨 로고 박스: 흰색 배경 로고도 예쁘게 보이도록 소프트 화이트 처리 */
+        /* 🚨 로고 박스: 백그라운드를 JS에서 동적으로 제어하여 하얀 박스 오류 방지 */
         .clinic-logo-box { 
             display: flex; align-items: center; justify-content: center; 
-            background: rgba(255, 255, 255, 0.95); /* 흰색 배경 로고를 위해 부드러운 배경 추가 */
+            background: transparent; /* 초기값 투명 */
             padding: 4px 8px;
             border-radius: 8px;
             min-width: 40px;
             height: 40px;
+            transition: background 0.3s;
         }
-        .clinic-logo-box img { max-height: 32px; width: auto; object-fit: contain; } /* 필터 삭제하여 원본 로고 유지 */
-        .clinic-logo-box i { font-size: 24px; color: var(--brand-dark); } /* 로고 없을 때만 보임 */
+        .clinic-logo-box img { max-height: 32px; width: auto; object-fit: contain; }
         
-        /* 🚨 관리자님 요청: 메인 제목 크기 28px 고정 */
+        /* 메인 제목 및 인사말 (비율 고정) */
         .clinic-main-title { font-size: 28px !important; font-weight: 800; color: white; letter-spacing: -1px; line-height: 1.2; word-break: keep-all; }
-
-        /* 🚨 관리자님 요청: 환자 인사말 19px 고정 */
         .greeting-sub { font-size: 19px !important; font-weight: 600; color: rgba(255,255,255,0.9); line-height: 1.5; letter-spacing: -0.4px; }
         .greeting-sub span { color: #A7F3D0; font-weight: 800; }
 
@@ -102,7 +99,7 @@
     <header class="header">
         <div class="clinic-brand-header">
             <div class="clinic-logo-box" id="logo-container">
-                <i class="fa-solid fa-tooth"></i>
+                <!-- 자바스크립트가 로고 유무를 판단하여 이 영역을 채웁니다 -->
             </div>
             <div class="clinic-main-title" id="badge-text">병원 정밀 진단 리포트</div>
         </div>
@@ -136,7 +133,6 @@
         <h3 class="section-title"><i class="fa-solid fa-hospital"></i> 병원 안내</h3>
         <ul class="clinic-info-list">
             <li id="li-adv">
-                <!-- 🚨 관리자님 요청: 진료 원칙 자동화 -->
                 <strong id="adv-title">병원의 흔들리지 않는 진료 원칙</strong>
                 <p id="adv-content"></p>
             </li>
@@ -155,7 +151,6 @@
 </div>
 
 <script>
-    // Airtable 설정 (최종 확인 완료)
     const AIRTABLE_TOKEN = "patLaJUuWZN8mqVKa.cc49eaf357f0ed1247ed35c9495e2b171bf84cfccf4e4d3c44ecae2fbe1fd2d9";
     const BASE_ID = "appxMuv95Sk0HyDyh"; 
     const TABLE_ID = "tbllZuI1rejGLAsDU"; 
@@ -179,15 +174,35 @@
             
             document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
             document.getElementById('badge-text').innerText = clinicName + " 정밀 진단 리포트";
-            
-            // 🚨 문구 자동화: 흔들리지 않는 진료 원칙
             document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
             
-            // 🚨 로고 연동 복구: 배열 구조 정밀 타격
+            // 🚨 [진짜 해결책] 룩업(Lookup) 이중 배열 완벽 해독기
             const logoField = fields["병원로고(자동)"];
+            let finalLogoUrl = "";
+
             if (logoField && Array.isArray(logoField) && logoField.length > 0) {
-                const logoUrl = logoField[0].url;
-                document.getElementById('logo-container').innerHTML = `<img src="${logoUrl}" alt="Logo">`;
+                // 1. 일반 배열인 경우
+                if (logoField[0].url) {
+                    finalLogoUrl = logoField[0].url;
+                } 
+                // 2. 룩업 속성 때문에 이중 배열이 된 경우 (범인 색출!)
+                else if (Array.isArray(logoField[0]) && logoField[0].length > 0 && logoField[0][0].url) {
+                    finalLogoUrl = logoField[0][0].url;
+                } 
+                // 3. 단순 텍스트 주소로 넘어온 경우
+                else if (typeof logoField[0] === 'string' && logoField[0].startsWith('http')) {
+                    finalLogoUrl = logoField[0];
+                }
+            }
+
+            // 로고가 성공적으로 해독되었을 때와 아닐 때의 배경 처리
+            const logoContainer = document.getElementById('logo-container');
+            if (finalLogoUrl) {
+                logoContainer.style.background = 'rgba(255, 255, 255, 0.95)'; // 로고가 있을 때만 하얀 박스 활성화
+                logoContainer.innerHTML = `<img src="${finalLogoUrl}" alt="Logo" onerror="this.style.display='none'">`;
+            } else {
+                logoContainer.style.background = 'transparent'; // 로고가 없으면 투명하게 처리 (하얀 정사각형 방지)
+                logoContainer.innerHTML = `<i class="fa-solid fa-tooth" style="font-size: 28px; color: white;"></i>`;
             }
 
             if(fields["전화걸기링크"] || fields["병원연락처(자동)"]) {
