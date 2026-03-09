@@ -16,7 +16,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-beige); color: var(--text-main); line-height: 1.6; padding-bottom: 120px; }
+        body { background-color: var(--bg-beige); color: var(--text-main); line-height: 1.6; padding-bottom: 140px; } /* 하단 여백 조금 늘림 */
 
         /* 로딩 화면 */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -72,9 +72,15 @@
 
         .image-caption { font-size: 12px; color: var(--text-gray); text-align: center; margin-top: 8px; line-height: 1.4; letter-spacing: -0.2px; }
 
-        /* 하단 예약 버튼 */
-        .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); padding: 15px 20px 30px; z-index: 100; max-width: 500px; margin: 0 auto; border-top: 1px solid #eee; }
-        .cta-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--brand-dark); color: white; text-decoration: none; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 800; box-shadow: 0 10px 25px rgba(30, 75, 62, 0.2); }
+        /* 하단 예약 버튼 그룹 */
+        .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); padding: 15px 20px 30px; z-index: 100; max-width: 500px; margin: 0 auto; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
+        
+        .cta-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--brand-dark); color: white; text-decoration: none; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 800; box-shadow: 0 10px 25px rgba(30, 75, 62, 0.2); border: none; cursor: pointer; width: 100%; }
+        
+        /* 카톡 발송 버튼 전용 스타일 */
+        .kakao-btn { background: #FEE500; color: #191919; box-shadow: 0 10px 25px rgba(254, 229, 0, 0.3); display: none; /* 초기에는 숨김 처리 */ }
+        .kakao-btn i { color: #3A1D1D; }
+        .kakao-btn:disabled { opacity: 0.7; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -97,8 +103,7 @@
     <header class="header">
         <div class="clinic-brand-header">
             <div class="clinic-logo-box" id="logo-container">
-                <!-- 자바스크립트가 로고 유무를 판단하여 이 영역을 채웁니다 -->
-            </div>
+                </div>
             <div class="clinic-main-title" id="badge-text">병원 정밀 진단 리포트</div>
         </div>
         <div class="greeting-sub">
@@ -142,6 +147,9 @@
     </section>
 
     <div class="sticky-footer">
+        <button class="cta-btn kakao-btn" id="kakao-send-btn" onclick="sendToPatient()">
+            <i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송
+        </button>
         <a href="tel:0212345678" class="cta-btn" id="call-btn">
             <i class="fa-solid fa-phone-volume"></i> 치료 예약 및 상담 문의하기
         </a>
@@ -188,7 +196,6 @@
                 }
             }
 
-            // 🚨 로고가 없을 때 기본 아이콘을 편지봉투(fa-envelope)로 변경!
             const logoContainer = document.getElementById('logo-container');
             if (finalLogoUrl) {
                 logoContainer.style.background = 'transparent'; 
@@ -234,6 +241,11 @@
             }
             if(hasInfo) document.getElementById('card-info').style.display = 'block';
 
+            // 🔥 [핵심 추가] '발송 일시' 데이터가 비어있을 때만 카톡 버튼 노출
+            if (!fields["발송 일시"]) {
+                document.getElementById('kakao-send-btn').style.display = 'flex';
+            }
+
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('lock-screen').style.display = 'flex';
 
@@ -252,6 +264,48 @@
         } else {
             document.getElementById('error-msg').style.display = 'block';
             document.getElementById('dob-input').style.borderColor = '#EF4444';
+        }
+    }
+
+    // 🔥 [핵심 추가] 카톡 발송 버튼 클릭 시 에어테이블 업데이트 함수
+    async function sendToPatient() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        if (!id) return;
+
+        const btn = document.getElementById('kakao-send-btn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 발송 처리 중...';
+        btn.disabled = true;
+
+        try {
+            // 현재 시간을 에어테이블 규격(ISO)에 맞게 생성
+            const now = new Date().toISOString();
+
+            const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
+                method: 'PATCH',
+                headers: { 
+                    'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: {
+                        "발송 일시": now
+                    }
+                })
+            });
+
+            if (response.ok) {
+                // 성공적으로 업데이트 되면 버튼을 완전히 숨김
+                btn.style.display = 'none';
+                alert('에어테이블에 발송 요청이 등록되었습니다.');
+            } else {
+                throw new Error('Airtable Update Failed');
+            }
+        } catch (error) {
+            console.error("업데이트 에러:", error);
+            alert("발송 처리에 실패했습니다. 다시 시도해 주세요.");
+            btn.innerHTML = '<i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송';
+            btn.disabled = false;
         }
     }
 
