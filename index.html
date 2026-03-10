@@ -19,7 +19,7 @@
         body { background-color: var(--bg-beige); color: var(--text-main); line-height: 1.6; padding-bottom: 140px; }
 
         /* 로딩 화면 */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px;}
         .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--brand-dark); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -59,7 +59,7 @@
         .clinic-info-list { list-style: none; }
         .clinic-info-list li { margin-bottom: 12px; padding: 12px; background: #F8FAFC; border-radius: 12px; border: 1px solid #EDF2F7; }
         .clinic-info-list strong { display: block; font-size: 14px; color: var(--brand-dark); margin-bottom: 4px; }
-        .clinic-info-list p { font-size: 14px; color: var(--text-gray); }
+        .clinic-info-list p { font-size: 14px; color: var(--text-gray); white-space: pre-wrap; }
 
         .image-caption { font-size: 12px; color: var(--text-gray); text-align: center; margin-top: 8px; line-height: 1.4; letter-spacing: -0.2px; }
 
@@ -77,7 +77,7 @@
 
 <div id="loading-screen">
     <div class="spinner"></div>
-    <p id="loading-text">리포트를 안전하게 불러오는 중입니다...</p>
+    <p id="loading-text" style="color: #1E293B; font-weight: 600; word-break: keep-all;">리포트를 안전하게 불러오는 중입니다...</p>
 </div>
 
 <div id="lock-screen">
@@ -160,10 +160,20 @@
 
     let correctDOB = ""; 
 
+    // 🔥 [무적 방어막] 에어테이블에서 어떤 형태(배열, 숫자, 공백)가 넘어와도 문자열로 안전하게 변환해 주는 함수
+    const safeString = (val) => {
+        if (val === null || val === undefined) return "";
+        if (Array.isArray(val)) return val.join("\n").trim();
+        return String(val).trim();
+    };
+
     async function initReport() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        if (!id) return;
+        if (!id) {
+            document.getElementById('loading-text').innerText = "오류: 리포트 ID가 없습니다. 정상적인 링크로 접속해주세요.";
+            return;
+        }
 
         try {
             const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
@@ -172,16 +182,16 @@
             const result = await response.json();
             
             // 데이터가 없거나 에러가 났을 때 확실하게 잡아주는 방어 로직
-            if (!result.fields) {
-                throw new Error("해당 환자의 데이터를 에어테이블에서 찾을 수 없습니다.");
+            if (!response.ok || !result.fields) {
+                throw new Error("데이터를 찾을 수 없습니다. (토큰 만료 또는 삭제된 리포트)");
             }
 
             const fields = result.fields;
 
-            correctDOB = fields["환자생년월일"]; 
-            const clinicName = fields["병원명(자동)"] || "우리병원";
+            correctDOB = safeString(fields["환자생년월일"]); 
+            const clinicName = safeString(fields["병원명(자동)"]) || "우리병원";
             
-            document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
+            document.getElementById('patient-name').innerText = safeString(fields["환자 성함"]) || "환자";
             document.getElementById('badge-text').innerText = clinicName + " 정밀 진단 리포트";
             
             // 로고 연동
@@ -189,13 +199,9 @@
             let finalLogoUrl = "";
 
             if (logoField && Array.isArray(logoField) && logoField.length > 0) {
-                if (logoField[0].url) {
-                    finalLogoUrl = logoField[0].url;
-                } else if (Array.isArray(logoField[0]) && logoField[0].length > 0 && logoField[0][0].url) {
-                    finalLogoUrl = logoField[0][0].url;
-                } else if (typeof logoField[0] === 'string' && logoField[0].startsWith('http')) {
-                    finalLogoUrl = logoField[0];
-                }
+                if (logoField[0].url) finalLogoUrl = logoField[0].url;
+                else if (Array.isArray(logoField[0]) && logoField[0].length > 0 && logoField[0][0].url) finalLogoUrl = logoField[0][0].url;
+                else if (typeof logoField[0] === 'string' && logoField[0].startsWith('http')) finalLogoUrl = logoField[0];
             }
 
             const logoContainer = document.getElementById('logo-container');
@@ -205,32 +211,54 @@
                 logoContainer.innerHTML = `<i class="fa-regular fa-envelope" style="font-size: 28px; color: white;"></i>`;
             }
 
-            if(fields["전화걸기링크"] || fields["병원연락처(자동)"]) {
-                document.getElementById('call-btn').href = fields["전화걸기링크"] || `tel:${fields["병원연락처(자동)"]}`;
+            const callLink = safeString(fields["전화걸기링크"]);
+            const callNumber = safeString(fields["병원연락처(자동)"]);
+            if(callLink || callNumber) {
+                document.getElementById('call-btn').href = callLink || `tel:${callNumber}`;
             }
 
-            if(fields["진단 소견"]) {
-                document.getElementById('text-opinion').innerText = fields["진단 소견"];
+            const opinionText = safeString(fields["진단 소견"]);
+            if(opinionText) {
+                document.getElementById('text-opinion').innerText = opinionText;
                 document.getElementById('card-opinion').style.display = 'block';
             }
+            
             const diagnosisImg = fields["진단 사진"] || fields["진단사진"];
             if(diagnosisImg && Array.isArray(diagnosisImg) && diagnosisImg.length > 0) {
                 document.getElementById('diagnosis-img').src = diagnosisImg[0].url;
                 document.getElementById('box-diagnosis-img').style.display = 'block';
                 document.getElementById('card-opinion').style.display = 'block';
             }
-            if(fields["맞춤치료계획"]) {
-                document.getElementById('text-template').innerText = fields["맞춤치료계획"];
+
+            const templateText = safeString(fields["맞춤치료계획"]);
+            if(templateText) {
+                document.getElementById('text-template').innerText = templateText;
+                document.getElementById('text-template').style.display = 'block';
                 document.getElementById('card-template').style.display = 'block';
+            } else {
+                // 템플릿 내용이 없으면 글씨 영역만 지워서 깔끔하게 만듦
+                document.getElementById('text-template').style.display = 'none';
             }
             
-            // 🔥 [비용 추가] 환자 노출용 진료비 조건부 렌더링 (에러 방어 완벽 처리)
-            if(fields["환자 노출용 진료비"] && String(fields["환자 노출용 진료비"]).trim() !== "") {
+            // 🔥 [비용 추가] 무적 방어막을 거친 환자 노출용 진료비 (직접 계산 마법 추가)
+            let costText = safeString(fields["환자 노출용 진료비"]) || safeString(fields["환자 노출용 진료"]);
+            
+            // [프론트엔드 직접 계산] 수식 칸 이름을 다르게 적었어도, '체크박스'와 '예상 진료비' 칸만 있으면 Vercel이 알아서 계산해서 글씨를 띄웁니다!
+            if (costText === "") {
+                const isChecked = fields["리포트에 금액 표시"];
+                const rawCost = fields["예상 진료비"];
+                if (isChecked && rawCost) {
+                    costText = "예상 진료비: ₩" + Number(rawCost).toLocaleString();
+                }
+            }
+
+            if(costText !== "") {
                 const textCostEl = document.getElementById('text-cost');
                 const costBoxEl = document.getElementById('cost-box');
                 if(textCostEl && costBoxEl) {
-                    textCostEl.innerText = fields["환자 노출용 진료비"];
+                    textCostEl.innerText = costText;
                     costBoxEl.style.display = 'block';
+                    // 템플릿 내용이 없어도 카드 자체는 무조건 보이게 켬
                     document.getElementById('card-template').style.display = 'block';
                 }
             }
@@ -243,15 +271,17 @@
             
             let hasInfo = false; 
             
-            if(fields["우리병원의 장점 (from 담당원장님)"] && String(fields["우리병원의 장점 (from 담당원장님)"]).trim() !== "") {
+            const advText = safeString(fields["우리병원의 장점 (from 담당원장님)"]);
+            if(advText !== "") {
                 document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
-                document.getElementById('adv-content').innerText = fields["우리병원의 장점 (from 담당원장님)"];
+                document.getElementById('adv-content').innerText = advText;
                 document.getElementById('li-adv').style.display = 'block';
                 hasInfo = true;
             }
             
-            if(fields["우리병원의 이벤트 (from 담당원장님)"] && String(fields["우리병원의 이벤트 (from 담당원장님)"]).trim() !== "") {
-                document.getElementById('event-content').innerText = fields["우리병원의 이벤트 (from 담당원장님)"];
+            const eventText = safeString(fields["우리병원의 이벤트 (from 담당원장님)"]);
+            if(eventText !== "") {
+                document.getElementById('event-content').innerText = eventText;
                 document.getElementById('li-event').style.display = 'block';
                 hasInfo = true;
             }
@@ -260,17 +290,21 @@
                 document.getElementById('card-info').style.display = 'block';
             }
 
-            if (!fields["발송 일시"]) {
+            // 발송 일시가 비어있을 때만 카톡 버튼 노출
+            if (!safeString(fields["발송 일시"])) {
                 document.getElementById('kakao-send-btn').style.display = 'flex';
             }
 
+            // 모든 준비 완료, 화면 전환
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('lock-screen').style.display = 'flex';
 
         } catch (error) {
             console.error("데이터 로드 실패:", error);
-            // 에러 내용을 구체적으로 보여주도록 수정 (디버깅 용이)
-            document.getElementById('loading-text').innerText = "에러 발생: " + error.message;
+            // v7.2: 에러가 발생하면 무조건 이 텍스트가 화면에 뜹니다.
+            document.getElementById('loading-text').innerText = "에러 발생: " + error.message + "\n(Vercel 최신 배포가 정상 적용되었습니다.)";
+            document.getElementById('loading-text').style.color = "#EF4444";
+            document.querySelector('.spinner').style.display = 'none';
         }
     }
 
