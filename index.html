@@ -240,7 +240,7 @@
                 document.getElementById('text-template').style.display = 'none';
             }
             
-            // 🔥 [비용 추가] 무적 방어막을 거친 환자 노출용 진료비 (직접 계산 마법 추가)
+            // 🔥 [비용 추가] 무적 방어막을 거친 환자 노출용 진료비 (직접 계산 마법 + 콤마 자동 찍기 추가!)
             let costText = safeString(fields["환자 노출용 진료비"]) || safeString(fields["환자 노출용 진료"]);
             
             // [프론트엔드 직접 계산] 수식 칸 이름을 다르게 적었어도, '체크박스'와 '예상 진료비' 칸만 있으면 Vercel이 알아서 계산해서 글씨를 띄웁니다!
@@ -253,10 +253,13 @@
             }
 
             if(costText !== "") {
+                // 👉 만약 에어테이블 수식에서 넘어온 글씨에 콤마가 없다면, 정규식을 써서 강제로 콤마를 찍어버리는 마법 🪄
+                const formattedCostText = costText.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                
                 const textCostEl = document.getElementById('text-cost');
                 const costBoxEl = document.getElementById('cost-box');
                 if(textCostEl && costBoxEl) {
-                    textCostEl.innerText = costText;
+                    textCostEl.innerText = formattedCostText; // 강제 콤마 처리된 텍스트를 출력
                     costBoxEl.style.display = 'block';
                     // 템플릿 내용이 없어도 카드 자체는 무조건 보이게 켬
                     document.getElementById('card-template').style.display = 'block';
@@ -360,4 +363,3 @@
 </script>
 </body>
 </html>
-
