@@ -122,6 +122,13 @@
     <section class="section-card" id="card-template">
         <h3 class="section-title"><i class="fa-solid fa-list-check"></i> 맞춤 치료 계획</h3>
         <div class="content-text" id="text-template"></div>
+        
+        <!-- 🔥 [비용 추가] 예상 진료비 노출 박스 (기본 숨김) -->
+        <div id="cost-box" style="display:none; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.4); padding: 18px; border-radius: 12px; margin-top: 15px;">
+            <div style="font-size: 13px; font-weight: 800; color: var(--brand-emerald); margin-bottom: 4px;"><i class="fa-solid fa-wallet"></i> 예상 진료비 안내</div>
+            <div id="text-cost" style="font-size: 18px; font-weight: 800; color: var(--brand-dark);"></div>
+            <div style="font-size: 11px; color: var(--text-gray); margin-top: 6px;">* 실제 진료 시 환자분의 구강 상태에 따라 금액이 변동될 수 있습니다.</div>
+        </div>
     </section>
 
     <section class="section-card" id="card-example">
@@ -135,10 +142,12 @@
     <section class="section-card" id="card-info">
         <h3 class="section-title"><i class="fa-solid fa-hospital"></i> 병원 안내</h3>
         <ul class="clinic-info-list">
-            <li id="li-adv">
+            <!-- 진료 원칙 li 요소 (초기 숨김) -->
+            <li id="li-adv" style="display:none;">
                 <strong id="adv-title">병원의 흔들리지 않는 진료 원칙</strong>
                 <p id="adv-content"></p>
             </li>
+            <!-- 이벤트 li 요소 (초기 숨김) -->
             <li id="li-event" style="background:#FFF1F2; border-color:#FECACA; display:none;">
                 <strong style="color:#E11D48;">현재 진행 중인 혜택</strong>
                 <p id="event-content" style="color:#9F1239;"></p>
@@ -180,7 +189,6 @@
             
             document.getElementById('patient-name').innerText = fields["환자 성함"] || "환자";
             document.getElementById('badge-text').innerText = clinicName + " 정밀 진단 리포트";
-            document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
             
             // 로고 연동
             const logoField = fields["병원로고(자동)"];
@@ -223,23 +231,41 @@
                 document.getElementById('text-template').innerText = fields["맞춤치료계획"];
                 document.getElementById('card-template').style.display = 'block';
             }
+            
+            // 🔥 [비용 추가] 환자 노출용 진료비 조건부 렌더링
+            if(fields["환자 노출용 진료비"] && fields["환자 노출용 진료비"].trim() !== "") {
+                document.getElementById('text-cost').innerText = fields["환자 노출용 진료비"];
+                document.getElementById('cost-box').style.display = 'block';
+                // 혹시 맞춤치료계획은 안 적고 금액만 적었을 경우를 대비해 카드 자체도 보이게 켬
+                document.getElementById('card-template').style.display = 'block';
+            }
+
             const exPhoto = fields["유사 증례 치료 사진(자동)"] || fields["유사 증례 치료 사진"];
             if(exPhoto && Array.isArray(exPhoto) && exPhoto.length > 0) {
                 document.getElementById('example-img').src = exPhoto[0].url;
                 document.getElementById('card-example').style.display = 'block';
             }
-            let hasInfo = false;
-            if(fields["우리병원의 장점 (from 담당원장님)"]) {
+            
+            // 🔥 [핵심 수정] 병원 안내(장점/이벤트) 조건부 노출 로직
+            let hasInfo = false; // 병원 안내 섹션 노출 여부 플래그
+            
+            if(fields["우리병원의 장점 (from 담당원장님)"] && fields["우리병원의 장점 (from 담당원장님)"].trim() !== "") {
+                document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
                 document.getElementById('adv-content').innerText = fields["우리병원의 장점 (from 담당원장님)"];
-                document.getElementById('li-adv').style.display = 'block';
+                document.getElementById('li-adv').style.display = 'block'; // 값이 있을 때만 li 태그 보이기
                 hasInfo = true;
             }
-            if(fields["우리병원의 이벤트 (from 담당원장님)"]) {
+            
+            if(fields["우리병원의 이벤트 (from 담당원장님)"] && fields["우리병원의 이벤트 (from 담당원장님)"].trim() !== "") {
                 document.getElementById('event-content').innerText = fields["우리병원의 이벤트 (from 담당원장님)"];
-                document.getElementById('li-event').style.display = 'block';
+                document.getElementById('li-event').style.display = 'block'; // 값이 있을 때만 li 태그 보이기
                 hasInfo = true;
             }
-            if(hasInfo) document.getElementById('card-info').style.display = 'block';
+            
+            // 장점이나 이벤트 중 하나라도 있으면 병원 안내 카드 전체를 보여줌
+            if(hasInfo) {
+                document.getElementById('card-info').style.display = 'block';
+            }
 
             // 🔥 [핵심 추가] '발송 일시' 데이터가 비어있을 때만 카톡 버튼 노출
             if (!fields["발송 일시"]) {
