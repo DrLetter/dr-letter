@@ -150,10 +150,11 @@
     </div>
 
     <div class="sticky-footer">
+        <!-- 💡 [숨김 처리됨] 이 버튼은 URL에 &admin=true 가 있을 때만 나타납니다. -->
         <button class="cta-btn kakao-btn" id="kakao-send-btn" onclick="sendToPatient()">
             <i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송
         </button>
-        <a href="tel:0212345678" class="cta-btn" id="call-btn">
+        <a href="#" class="cta-btn" id="call-btn">
             <i class="fa-solid fa-phone-volume"></i> 치료 예약 및 상담 문의하기
         </a>
     </div>
@@ -163,13 +164,10 @@
     const AIRTABLE_TOKEN = "patLaJUuWZN8mqVKa.cc49eaf357f0ed1247ed35c9495e2b171bf84cfccf4e4d3c44ecae2fbe1fd2d9";
     const BASE_ID = "appxMuv95Sk0HyDyh"; 
     const TABLE_ID = "tbllZuI1rejGLAsDU"; 
-
-    // 🚨 [추가됨] Make.com 웹훅 주소를 넣을 빈칸입니다. (오후에 솔라피 연동할 때 채울 곳!)
     const MAKE_WEBHOOK_URL = "https://hook.eu1.make.com/piwunrly93htenhse1aqd7tqty3yqkyz"; 
 
     let correctDOB = ""; 
 
-    // 🔥 [무적 방어막] 에어테이블에서 어떤 형태(배열, 숫자, 공백)가 넘어와도 문자열로 안전하게 변환해 주는 함수
     const safeString = (val) => {
         if (val === null || val === undefined) return "";
         if (Array.isArray(val)) return val.join("\n").trim();
@@ -179,6 +177,8 @@
     async function initReport() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
+        const isAdmin = urlParams.get('admin') === 'true'; // 관리자 여부 체크!
+
         if (!id) {
             document.getElementById('loading-text').innerText = "오류: 리포트 ID가 없습니다. 정상적인 링크로 접속해주세요.";
             return;
@@ -219,10 +219,10 @@
                 logoContainer.innerHTML = `<i class="fa-regular fa-envelope" style="font-size: 28px; color: white;"></i>`;
             }
 
-            const callLink = safeString(fields["전화걸기링크"]);
+            // 상담 버튼을 무조건 병원 연락처 직통 전화(tel:)로 연결
             const callNumber = safeString(fields["병원연락처(자동)"]);
-            if(callLink || callNumber) {
-                document.getElementById('call-btn').href = callLink || `tel:${callNumber}`;
+            if (callNumber) {
+                document.getElementById('call-btn').href = `tel:${callNumber}`;
             }
 
             const opinionText = safeString(fields["진단 소견"]);
@@ -295,18 +295,28 @@
                 document.getElementById('card-info').style.display = 'block';
             }
 
-            // 발송 일시가 비어있을 때만 카톡 버튼 노출
-            if (!safeString(fields["발송 일시"])) {
+            // 원장님(관리자) 전용 모드일 때만 카톡 버튼 노출!
+            if (isAdmin) {
                 document.getElementById('kakao-send-btn').style.display = 'flex';
+            } else {
+                document.getElementById('kakao-send-btn').style.display = 'none';
             }
 
-            // 로딩 완료 후 잠금 화면 표시
+            // 🔥 [추가된 프리패스 로직]
             document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('lock-screen').style.display = 'flex';
+
+            if (isAdmin) {
+                // 관리자면 자물쇠 화면을 숨기고 바로 리포트 내용(app-container) 표시!
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('report-app').style.display = 'block';
+            } else {
+                // 일반 환자면 자물쇠 화면 표시!
+                document.getElementById('lock-screen').style.display = 'flex';
+            }
 
         } catch (error) {
             console.error("데이터 로드 실패:", error);
-            document.getElementById('loading-text').innerText = "에러 발생: " + error.message + "\n(Vercel 최신 배포가 정상 적용되었습니다.)";
+            document.getElementById('loading-text').innerText = "에러 발생: " + error.message;
             document.getElementById('loading-text').style.color = "#EF4444";
             document.querySelector('.spinner').style.display = 'none';
         }
@@ -324,13 +334,11 @@
         }
     }
 
-    // 🔥 [수정됨] 에어테이블 직접 수정(PATCH) 대신 Make.com 웹훅 호출로 변경!
     async function sendToPatient() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         if (!id) return;
 
-        // 웹훅 주소가 아직 없으면 경고창 띄우기
         if (!MAKE_WEBHOOK_URL) {
             alert("관리자님! 코드 상단의 MAKE_WEBHOOK_URL 빈칸에 Make 주소를 넣어주세요.");
             return;
@@ -341,12 +349,11 @@
         btn.disabled = true;
 
         try {
-            // Make.com에게 "이 ID(환자) 알림톡 보내줘!" 라고 신호(GET)만 보냅니다.
             const response = await fetch(`${MAKE_WEBHOOK_URL}?id=${id}`);
 
             if (response.ok || response.status === 200) {
                 btn.style.display = 'none';
-                alert('환자에게 알림톡 발송 요청이 전달되었습니다!');
+                alert('환자에게 알림톡 발송 요청이 성공적으로 전달되었습니다!');
             } else {
                 throw new Error('Webhook Failed');
             }
@@ -362,5 +369,3 @@
 </script>
 </body>
 </html>
-
-
