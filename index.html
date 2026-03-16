@@ -267,7 +267,15 @@
                 document.getElementById('li-adv').style.display = 'block';
                 document.getElementById('card-info').style.display = 'block';
             }
-
+            
+            // 이벤트 정보 표시 (추가된 부분)
+            const eventText = safeString(fields["우리병원의 이벤트"]); // ⚠️ Airtable의 실제 컬럼명과 일치해야 합니다.
+            if(eventText !== "") {
+                document.getElementById('event-content').innerText = eventText;
+                document.getElementById('li-event').style.display = 'block';
+                document.getElementById('card-info').style.display = 'block';
+            }
+            
             // [관리자 모드 및 버튼 잠금 제어]
             if (isAdmin) {
                 kakaoBtn.style.display = 'flex';
