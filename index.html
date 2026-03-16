@@ -70,7 +70,7 @@
         /* 카톡 발송 버튼 전용 스타일 */
         .kakao-btn { background: #FEE500; color: #191919; box-shadow: 0 10px 25px rgba(254, 229, 0, 0.3); display: none; }
         .kakao-btn i { color: #3A1D1D; }
-        .kakao-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .kakao-btn:disabled { background: #E2E8F0 !important; color: #94A3B8 !important; cursor: not-allowed; box-shadow: none !important; }
     </style>
 </head>
 <body>
@@ -150,7 +150,7 @@
     </div>
 
     <div class="sticky-footer">
-        <!-- 💡 [숨김 처리됨] 이 버튼은 URL에 &admin=true 가 있을 때만 나타납니다. -->
+        <!-- 💡 [발송 제한 로직 반영] 버튼 -->
         <button class="cta-btn kakao-btn" id="kakao-send-btn" onclick="sendToPatient()">
             <i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송
         </button>
@@ -177,10 +177,10 @@
     async function initReport() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        const isAdmin = urlParams.get('admin') === 'true'; // 관리자 여부 체크!
+        const isAdmin = urlParams.get('admin') === 'true'; 
 
         if (!id) {
-            document.getElementById('loading-text').innerText = "오류: 리포트 ID가 없습니다. 정상적인 링크로 접속해주세요.";
+            document.getElementById('loading-text').innerText = "오류: 리포트 ID가 없습니다.";
             return;
         }
 
@@ -191,10 +191,14 @@
             const result = await response.json();
             
             if (!response.ok || !result.fields) {
-                throw new Error("데이터를 찾을 수 없습니다. (토큰 만료 또는 삭제된 리포트)");
+                throw new Error("데이터 로드 실패");
             }
 
             const fields = result.fields;
+
+            // [추가된 잔여 횟수 체크 로직]
+            const remainingCount = Number(fields["원장님잔여횟수(자동)"]) || 0;
+            const kakaoBtn = document.getElementById('kakao-send-btn');
 
             correctDOB = safeString(fields["환자생년월일"]); 
             const clinicName = safeString(fields["병원명(자동)"]) || "우리병원";
@@ -205,21 +209,18 @@
             // 로고 연동
             const logoField = fields["병원로고(자동)"];
             let finalLogoUrl = "";
-
             if (logoField && Array.isArray(logoField) && logoField.length > 0) {
                 if (logoField[0].url) finalLogoUrl = logoField[0].url;
-                else if (Array.isArray(logoField[0]) && logoField[0].length > 0 && logoField[0][0].url) finalLogoUrl = logoField[0][0].url;
-                else if (typeof logoField[0] === 'string' && logoField[0].startsWith('http')) finalLogoUrl = logoField[0];
             }
 
             const logoContainer = document.getElementById('logo-container');
             if (finalLogoUrl) {
-                logoContainer.innerHTML = `<img src="${finalLogoUrl}" alt="Logo" onerror="this.style.display='none'">`;
+                logoContainer.innerHTML = `<img src="${finalLogoUrl}" alt="Logo">`;
             } else {
                 logoContainer.innerHTML = `<i class="fa-regular fa-envelope" style="font-size: 28px; color: white;"></i>`;
             }
 
-            // 상담 버튼을 무조건 병원 연락처 직통 전화(tel:)로 연결
+            // 상담 버튼 연결
             const callNumber = safeString(fields["병원연락처(자동)"]);
             if (callNumber) {
                 document.getElementById('call-btn').href = `tel:${callNumber}`;
@@ -241,31 +242,15 @@
             const templateText = safeString(fields["맞춤치료계획"]);
             if(templateText) {
                 document.getElementById('text-template').innerText = templateText;
-                document.getElementById('text-template').style.display = 'block';
                 document.getElementById('card-template').style.display = 'block';
-            } else {
-                document.getElementById('text-template').style.display = 'none';
             }
             
-            let costText = safeString(fields["환자 노출용 진료비"]) || safeString(fields["환자 노출용 진료"]);
-            
-            if (costText === "") {
-                const isChecked = fields["리포트에 금액 표시"];
-                const rawCost = fields["예상 진료비"];
-                if (isChecked && rawCost) {
-                    costText = "예상 진료비: ₩" + Number(rawCost).toLocaleString();
-                }
-            }
-
+            // 비용 표시 로직
+            let costText = safeString(fields["환자 노출용 진료비"]) || "";
             if(costText !== "") {
-                const formattedCostText = costText.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                const textCostEl = document.getElementById('text-cost');
-                const costBoxEl = document.getElementById('cost-box');
-                if(textCostEl && costBoxEl) {
-                    textCostEl.innerText = formattedCostText; 
-                    costBoxEl.style.display = 'block';
-                    document.getElementById('card-template').style.display = 'block';
-                }
+                document.getElementById('text-cost').innerText = costText;
+                document.getElementById('cost-box').style.display = 'block';
+                document.getElementById('card-template').style.display = 'block';
             }
 
             const exPhoto = fields["유사 증례 치료 사진(자동)"] || fields["유사 증례 치료 사진"];
@@ -274,51 +259,38 @@
                 document.getElementById('card-example').style.display = 'block';
             }
             
-            let hasInfo = false; 
-            
+            // 병원 정보 표시
             const advText = safeString(fields["우리병원의 장점 (from 담당원장님)"]);
             if(advText !== "") {
-                document.getElementById('adv-title').innerText = clinicName + "의 흔들리지 않는 진료 원칙";
+                document.getElementById('adv-title').innerText = clinicName + "의 진료 원칙";
                 document.getElementById('adv-content').innerText = advText;
                 document.getElementById('li-adv').style.display = 'block';
-                hasInfo = true;
-            }
-            
-            const eventText = safeString(fields["우리병원의 이벤트 (from 담당원장님)"]);
-            if(eventText !== "") {
-                document.getElementById('event-content').innerText = eventText;
-                document.getElementById('li-event').style.display = 'block';
-                hasInfo = true;
-            }
-            
-            if(hasInfo) {
                 document.getElementById('card-info').style.display = 'block';
             }
 
-            // 원장님(관리자) 전용 모드일 때만 카톡 버튼 노출!
+            // [관리자 모드 및 버튼 잠금 제어]
             if (isAdmin) {
-                document.getElementById('kakao-send-btn').style.display = 'flex';
+                kakaoBtn.style.display = 'flex';
+                // 횟수가 0 이하면 버튼 잠그기
+                if (remainingCount <= 0) {
+                    kakaoBtn.disabled = true;
+                    kakaoBtn.innerHTML = '<i class="fa-solid fa-lock"></i> 발송 한도 초과 (충전 필요)';
+                }
             } else {
-                document.getElementById('kakao-send-btn').style.display = 'none';
+                kakaoBtn.style.display = 'none';
             }
 
-            // 🔥 [추가된 프리패스 로직]
             document.getElementById('loading-screen').style.display = 'none';
-
             if (isAdmin) {
-                // 관리자면 자물쇠 화면을 숨기고 바로 리포트 내용(app-container) 표시!
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('report-app').style.display = 'block';
             } else {
-                // 일반 환자면 자물쇠 화면 표시!
                 document.getElementById('lock-screen').style.display = 'flex';
             }
 
         } catch (error) {
             console.error("데이터 로드 실패:", error);
-            document.getElementById('loading-text').innerText = "에러 발생: " + error.message;
-            document.getElementById('loading-text').style.color = "#EF4444";
-            document.querySelector('.spinner').style.display = 'none';
+            document.getElementById('loading-text').innerText = "에러: " + error.message;
         }
     }
 
@@ -330,38 +302,29 @@
             window.scrollTo(0, 0);
         } else {
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('dob-input').style.borderColor = '#EF4444';
         }
     }
 
     async function sendToPatient() {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
-        if (!id) return;
-
-        if (!MAKE_WEBHOOK_URL) {
-            alert("관리자님! 코드 상단의 MAKE_WEBHOOK_URL 빈칸에 Make 주소를 넣어주세요.");
-            return;
-        }
-
         const btn = document.getElementById('kakao-send-btn');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 발송 처리 중...';
+        
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 발송 중...';
         btn.disabled = true;
 
         try {
             const response = await fetch(`${MAKE_WEBHOOK_URL}?id=${id}`);
-
-            if (response.ok || response.status === 200) {
+            if (response.ok) {
                 btn.style.display = 'none';
-                alert('환자에게 알림톡 발송 요청이 성공적으로 전달되었습니다!');
+                alert('알림톡 발송 요청이 전달되었습니다!');
             } else {
-                throw new Error('Webhook Failed');
+                throw new Error('전송 실패');
             }
         } catch (error) {
-            console.error("웹훅 호출 에러:", error);
-            alert("발송 처리에 실패했습니다. 다시 시도해 주세요.");
-            btn.innerHTML = '<i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송';
+            alert("오류가 발생했습니다.");
             btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송';
         }
     }
 
