@@ -269,7 +269,7 @@
             }
             
             // 이벤트 정보 표시 (추가된 부분)
-            const eventText = safeString(fields["우리병원의 이벤트"]); // ⚠️ Airtable의 실제 컬럼명과 일치해야 합니다.
+            const eventText = safeString(fields["우리병원의 이벤트 (from 담당원장님)"]); // ⚠️ Airtable의 실제 컬럼명과 일치해야 합니다.
             if(eventText !== "") {
                 document.getElementById('event-content').innerText = eventText;
                 document.getElementById('li-event').style.display = 'block';
