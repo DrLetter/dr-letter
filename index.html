@@ -35,16 +35,24 @@
 
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; display: none; }
 
-        /* 헤더 디자인 */
-        .header { background-color: var(--brand-dark); padding: 55px 20px 50px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; text-align: center; color: white; box-shadow: 0 12px 35px rgba(0,0,0,0.15); }
-        .clinic-brand-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; width: 100%; }
+        /* 🔥 [수정됨] 헤더 디자인: 중앙 세로 정렬 및 앱 아이콘 스타일 */
+        .header { background-color: var(--brand-dark); padding: 50px 20px 40px; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; text-align: center; color: white; box-shadow: 0 12px 35px rgba(0,0,0,0.15); }
         
-        .clinic-logo-box { display: flex; align-items: center; justify-content: center; background: transparent !important; padding: 0; min-width: 30px; height: 40px; }
-        .clinic-logo-box img { max-height: 36px; width: auto; object-fit: contain; }
+        /* 가로 배치를 세로 배치(column)로 변경하여 무조건 가지런하게 정렬 */
+        .clinic-brand-header { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; width: 100%; }
         
-        .clinic-main-title { font-size: 28px !important; font-weight: 800; color: white; letter-spacing: -1px; line-height: 1.2; word-break: keep-all; }
-        .greeting-sub { font-size: 19px !important; font-weight: 600; color: rgba(255,255,255,0.9); line-height: 1.5; letter-spacing: -0.4px; }
-        .greeting-sub span { color: #A7F3D0; font-weight: 800; }
+        /* 로고를 흰색 둥근 네모 박스에 넣어 고급스럽게 연출 */
+        .clinic-logo-box { display: flex; align-items: center; justify-content: center; background: #ffffff !important; padding: 5px; width: 72px; height: 72px; border-radius: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .clinic-logo-box img { width: 100%; height: 100%; object-fit: contain; border-radius: 16px; }
+        .clinic-logo-box i { font-size: 36px; color: var(--brand-dark); }
+        
+        /* 병원명과 리포트 제목을 명확히 구분 */
+        .clinic-main-title { font-size: 19px !important; font-weight: 500; color: rgba(255,255,255,0.8); letter-spacing: -0.5px; line-height: 1.4; word-break: keep-all; }
+        .clinic-name-highlight { display: block; font-size: 28px; font-weight: 900; color: #ffffff; margin-bottom: 6px; letter-spacing: -1px; }
+
+        /* 인사말 윗부분에 단정한 구분선 추가 */
+        .greeting-sub { font-size: 18px !important; font-weight: 500; color: rgba(255,255,255,0.9); line-height: 1.5; letter-spacing: -0.4px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15); width: 85%; margin: 0 auto; }
+        .greeting-sub span { color: #A7F3D0; font-weight: 800; font-size: 20px; }
 
         /* 카드 섹션 */
         .section-card { background: white; margin: 20px; padding: 25px; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); border: 1px solid #E5E1D8; display: none; }
@@ -65,7 +73,7 @@
 
         /* 하단 예약 버튼 그룹 */
         .sticky-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); padding: 15px 20px 30px; z-index: 100; max-width: 500px; margin: 0 auto; border-top: 1px solid #eee; display: flex; flex-direction: column; gap: 10px; }
-        .cta-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--brand-dark); color: white; text-decoration: none; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 800; box-shadow: 0 10px 25px rgba(30, 75, 62, 0.2); border: none; cursor: pointer; width: 100%; }
+        .cta-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--brand-dark); color: white; text-decoration: none; padding: 18px; border-radius: 18px; font-size: 17px; font-weight: 800; box-shadow: 0 10px 25px rgba(30, 75, 62, 0.2); border: none; cursor: pointer; width: 100%; transition: all 0.3s ease; }
         
         .kakao-btn { background: #FEE500; color: #191919; box-shadow: 0 10px 25px rgba(254, 229, 0, 0.3); display: none; }
         .kakao-btn i { color: #3A1D1D; }
@@ -91,9 +99,12 @@
 <div class="app-container" id="report-app">
     <header class="header">
         <div class="clinic-brand-header">
+            <!-- 로고 영역 -->
             <div class="clinic-logo-box" id="logo-container"></div>
+            <!-- 병원명 및 타이틀 영역 -->
             <div class="clinic-main-title" id="badge-text">병원 정밀 상담 리포트</div>
         </div>
+        <!-- 인사말 영역 -->
         <div class="greeting-sub">
             <span id="patient-name">환자</span>님을 위해<br>정성껏 준비했습니다.
         </div>
@@ -147,7 +158,7 @@
 
     <div class="sticky-footer">
         <button class="cta-btn kakao-btn" id="kakao-send-btn" onclick="sendToPatient()">
-            <i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송
+            <i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송 (1건 차감)
         </button>
         <a href="#" class="cta-btn" id="call-btn">
             <i class="fa-solid fa-phone-volume"></i> 치료 예약 및 상담 문의하기
@@ -188,20 +199,24 @@
 
             const fields = result.fields;
             const remainingCount = Number(fields["원장님잔여횟수(자동)"]) || 0;
+            const isAlreadySent = fields["카톡 발송 완료"] === true; 
             const kakaoBtn = document.getElementById('kakao-send-btn');
+            
             correctDOB = safeString(fields["환자생년월일"]); 
             const clinicName = safeString(fields["병원명(자동)"]) || "우리병원";
             
             document.getElementById('patient-name').innerText = safeString(fields["환자 성함"]) || "환자";
-            document.getElementById('badge-text').innerText = clinicName + " 정밀 상담 리포트";
             
-            // 로고
+            // 🔥 [수정] 병원명이 돋보이도록 줄바꿈 처리하여 HTML에 쏴줍니다.
+            document.getElementById('badge-text').innerHTML = `<span class="clinic-name-highlight">${clinicName}</span>정밀 상담 리포트`;
+            
+            // 🔥 [수정] 로고가 없어도 기본 병원 아이콘이 예쁘게 들어가도록 변경
             const logoField = fields["병원로고(자동)"];
             const logoContainer = document.getElementById('logo-container');
             if (logoField && Array.isArray(logoField) && logoField.length > 0) {
                 logoContainer.innerHTML = `<img src="${logoField[0].url}" alt="Logo">`;
             } else {
-                logoContainer.innerHTML = `<i class="fa-regular fa-envelope" style="font-size: 28px; color: white;"></i>`;
+                logoContainer.innerHTML = `<i class="fa-solid fa-hospital"></i>`;
             }
 
             // 상담 버튼
@@ -211,39 +226,31 @@
             // 1. 진단 소견 카드
             const opinionText = safeString(fields["진단 소견"]);
             const diagImg = fields["진단 사진"] || fields["진단사진"];
-            const hasOpinion = opinionText !== "";
-            const hasDiagImg = diagImg && Array.isArray(diagImg) && diagImg.length > 0;
-
-            if(hasOpinion || hasDiagImg) {
+            if(opinionText !== "" || (diagImg && diagImg.length > 0)) {
                 document.getElementById('card-opinion').style.display = 'block';
-                if(hasDiagImg) {
+                if(diagImg && diagImg.length > 0) {
                     document.getElementById('diagnosis-img').src = diagImg[0].url;
                     document.getElementById('box-diagnosis-img').style.display = 'block';
                 }
-                if(hasOpinion) {
+                if(opinionText !== "") {
                     document.getElementById('text-opinion').innerText = opinionText;
                     document.getElementById('text-opinion').style.display = 'block';
                 }
             }
 
-            // 2. 치료 계획 & 비용 카드 (사진 image_c6257e.png 기준 수정)
+            // 2. 치료 계획 & 비용 카드
             const templateText = safeString(fields["맞춤치료계획"]);
-            
-            // 🌟 [수정 포인트] 에어테이블 필드에서 직접 값을 가져와 브라우저가 계산합니다.
-            const rawCost = fields["예상 진료비"]; // 숫자(Currency)
-            const showCostToggle = fields["리포트에 금액 표시"] === true || fields["리포트에 금액 표시"] === 1; // 체크박스 확인
-            
-            const hasTemplate = templateText !== "";
+            const rawCost = fields["예상 진료비"]; 
+            const showCostToggle = fields["리포트에 금액 표시"] === true || fields["리포트에 금액 표시"] === 1; 
             const hasCost = showCostToggle && (rawCost !== undefined && rawCost !== null);
 
-            if(hasTemplate || hasCost) {
+            if(templateText !== "" || hasCost) {
                 document.getElementById('card-template').style.display = 'block';
-                if(hasTemplate) {
+                if(templateText !== "") {
                     document.getElementById('text-template').innerText = templateText;
                     document.getElementById('text-template').style.display = 'block';
                 }
                 if(hasCost) {
-                    // 숫자를 한국 통화 형식(콤마 찍기)으로 변환
                     const formattedCost = new Intl.NumberFormat('ko-KR').format(rawCost);
                     document.getElementById('text-cost').innerText = `예상 진료비: ₩${formattedCost}`;
                     document.getElementById('cost-box').style.display = 'block';
@@ -257,7 +264,7 @@
                 document.getElementById('card-example').style.display = 'block';
             }
             
-            // 4. 병원 안내 (장점 & 이벤트)
+            // 4. 병원 안내
             const advText = safeString(fields["우리병원의 장점 (from 담당원장님)"]);
             const eventText = safeString(fields["우리병원의 이벤트 (from 담당원장님)"]);
             if (advText !== "" || eventText !== "") {
@@ -273,10 +280,14 @@
                 }
             }
 
-            // 관리자 모드
+            // 관리자 모드 버튼 및 잠금 로직
             if (isAdmin) {
                 kakaoBtn.style.display = 'flex';
-                if (remainingCount <= 0) {
+                
+                if (isAlreadySent) {
+                    kakaoBtn.disabled = true;
+                    kakaoBtn.innerHTML = '<i class="fa-solid fa-check"></i> 이미 발송된 리포트입니다';
+                } else if (remainingCount <= 0) {
                     kakaoBtn.disabled = true;
                     kakaoBtn.innerHTML = '<i class="fa-solid fa-lock"></i> 발송 한도 초과 (충전 필요)';
                 }
@@ -309,20 +320,34 @@
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         const btn = document.getElementById('kakao-send-btn');
+        
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 발송 중...';
         btn.disabled = true;
+
         try {
             const response = await fetch(`${MAKE_WEBHOOK_URL}?id=${id}`);
-            if (response.ok) {
-                btn.style.display = 'none';
-                alert('알림톡 발송 요청이 전달되었습니다!');
-            } else {
-                throw new Error('전송 실패');
-            }
+            if (!response.ok) throw new Error('알림톡 전송 실패');
+
+            const updateResponse = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fields: { "카톡 발송 완료": true }
+                })
+            });
+
+            if (!updateResponse.ok) console.warn("상태 업데이트 실패 (발송은 성공함)");
+
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> 이미 발송된 리포트입니다';
+            alert('환자분께 알림톡이 발송되었습니다!\n(발송 건수 1건이 차감됩니다)');
+
         } catch (error) {
             alert("오류가 발생했습니다.");
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송';
+            btn.innerHTML = '<i class="fa-solid fa-comment"></i> 카톡으로 환자에게 발송 (1건 차감)';
         }
     }
 
@@ -330,3 +355,6 @@
 </script>
 </body>
 </html>
+
+
+
